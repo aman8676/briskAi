@@ -287,7 +287,7 @@ export default function LandingPage({ enterAuth, enterApp, isAuthenticated, onSi
                   : "bg-white/85 border-slate-300 text-slate-700"
               }`}
             >
-              <span className="text-[10px] text-slate-400">Drift Speed:</span>
+              {/* <span className="text-[10px] text-slate-400">Drift Speed:</span>
               <button
                 type="button"
                 onClick={() => setInteractiveSpeed(0.5)}
@@ -320,7 +320,7 @@ export default function LandingPage({ enterAuth, enterApp, isAuthenticated, onSi
                 }`}
               >
                 2x
-              </button>
+              </button> */}
             </div>
           </div>
 
