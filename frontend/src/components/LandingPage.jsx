@@ -85,7 +85,7 @@ export default function LandingPage({ enterAuth, enterApp, isAuthenticated, onSi
   return (
     <div
       className={`min-h-screen font-sans selection:bg-indigo-500 selection:text-white transition-colors duration-300 ${
-        isDark ? 'bg-[#030509] text-slate-100' : 'bg-[#f8fafc] text-slate-900'
+        isDark ? "bg-[#030509] text-slate-100" : "bg-[#f8fafc] text-slate-900"
       }`}
     >
       {/* ========================================================================= */}
@@ -94,8 +94,8 @@ export default function LandingPage({ enterAuth, enterApp, isAuthenticated, onSi
       <nav
         className={`sticky top-0 z-50 backdrop-blur-xl border-b transition-colors duration-300 ${
           isDark
-            ? 'bg-[#030509]/80 border-slate-800/80 text-white'
-            : 'bg-white/85 border-slate-200 text-slate-900 shadow-xs'
+            ? "bg-[#030509]/80 border-slate-800/80 text-white"
+            : "bg-white/85 border-slate-200 text-slate-900 shadow-xs"
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
@@ -108,7 +108,9 @@ export default function LandingPage({ enterAuth, enterApp, isAuthenticated, onSi
               <span className=" text-lg tracking-tight bg-gradient-to-r from-indigo-400 via-sky-300 to-indigo-200 bg-clip-text text-transparent">
                 RAG STUDIO
               </span>
-              <span className={`block text-[10px] tracking-widest font-mono uppercase ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+              <span
+                className={`block text-[10px] tracking-widest font-mono uppercase ${isDark ? "text-slate-400" : "text-slate-500"}`}
+              >
                 Neural Document Intelligence
               </span>
             </div>
@@ -118,19 +120,19 @@ export default function LandingPage({ enterAuth, enterApp, isAuthenticated, onSi
           <div className="hidden md:flex items-center gap-8 text-sm font-medium">
             <a
               href="#architecture"
-              className={`transition-colors ${isDark ? 'text-slate-300 hover:text-white' : 'text-slate-600 hover:text-indigo-600'}`}
+              className={`transition-colors ${isDark ? "text-slate-300 hover:text-white" : "text-slate-600 hover:text-indigo-600"}`}
             >
               Architecture
             </a>
             <a
               href="#features"
-              className={`transition-colors ${isDark ? 'text-slate-300 hover:text-white' : 'text-slate-600 hover:text-indigo-600'}`}
+              className={`transition-colors ${isDark ? "text-slate-300 hover:text-white" : "text-slate-600 hover:text-indigo-600"}`}
             >
               Features
             </a>
             <a
               href="#faq"
-              className={`transition-colors ${isDark ? 'text-slate-300 hover:text-white' : 'text-slate-600 hover:text-indigo-600'}`}
+              className={`transition-colors ${isDark ? "text-slate-300 hover:text-white" : "text-slate-600 hover:text-indigo-600"}`}
             >
               FAQ
             </a>
@@ -155,8 +157,8 @@ export default function LandingPage({ enterAuth, enterApp, isAuthenticated, onSi
                   onClick={onSignOut}
                   className={`px-3 py-2 rounded-xl text-sm font-medium border transition-colors ${
                     isDark
-                      ? 'border-slate-700 text-rose-400 hover:bg-rose-500/10 hover:border-rose-500/30'
-                      : 'border-slate-200 text-rose-600 hover:bg-rose-50'
+                      ? "border-slate-700 text-rose-400 hover:bg-rose-500/10 hover:border-rose-500/30"
+                      : "border-slate-200 text-rose-600 hover:bg-rose-50"
                   }`}
                 >
                   Sign out
@@ -169,8 +171,8 @@ export default function LandingPage({ enterAuth, enterApp, isAuthenticated, onSi
                   onClick={enterAuth}
                   className={`px-4 py-2 rounded-xl text-sm font-semibold border transition-all ${
                     isDark
-                      ? 'border-slate-700 text-slate-200 hover:text-white hover:bg-slate-800'
-                      : 'border-slate-300 text-slate-700 hover:bg-slate-100 hover:border-slate-400'
+                      ? "border-slate-700 text-slate-200 hover:text-white hover:bg-slate-800"
+                      : "border-slate-300 text-slate-700 hover:bg-slate-100 hover:border-slate-400"
                   }`}
                 >
                   Sign in
@@ -191,7 +193,11 @@ export default function LandingPage({ enterAuth, enterApp, isAuthenticated, onSi
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="md:hidden p-2 rounded-xl border border-slate-700 text-slate-400 hover:text-white"
             >
-              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              {mobileMenuOpen ? (
+                <X className="w-5 h-5" />
+              ) : (
+                <Menu className="w-5 h-5" />
+              )}
             </button>
           </div>
         </div>
@@ -200,7 +206,9 @@ export default function LandingPage({ enterAuth, enterApp, isAuthenticated, onSi
         {mobileMenuOpen && (
           <div
             className={`md:hidden px-6 py-4 border-b space-y-3 ${
-              isDark ? 'bg-slate-950 border-slate-800' : 'bg-white border-slate-200'
+              isDark
+                ? "bg-slate-950 border-slate-800"
+                : "bg-white border-slate-200"
             }`}
           >
             <a
@@ -244,22 +252,22 @@ export default function LandingPage({ enterAuth, enterApp, isAuthenticated, onSi
       {/* ========================================================================= */}
       <section className="relative overflow-hidden min-h-[92vh] flex items-center justify-center pt-14 pb-20 md:pt-20 md:pb-32 px-4 sm:px-6 lg:px-8">
         {/* Background Particle Drift Canvas */}
-        <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+        {/* <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
           <ParticleDrift
             mode={theme === 'light' ? 'light' : 'dark'}
             speed={interactiveSpeed}
             className="w-full h-full"
           />
-        </div>
+        </div> */}
 
         {/* Lighter Theme Gradient Overlay for pristine text readability */}
-        <div
+        {/* <div
           className={`absolute inset-0 z-1 pointer-events-none transition-colors duration-300 ${
             isDark
               ? 'bg-gradient-to-b from-[#030509]/20 via-transparent to-[#030509]/60'
               : 'bg-gradient-to-b from-white/20 via-transparent to-[#f8fafc]/60'
           }`}
-        />
+        /> */}
 
         {/* Glow ambient accents */}
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-indigo-600/15 blur-[130px] rounded-full pointer-events-none z-1" />
@@ -274,7 +282,9 @@ export default function LandingPage({ enterAuth, enterApp, isAuthenticated, onSi
 
             <div
               className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono border backdrop-blur-md ${
-                isDark ? 'bg-slate-900/80 border-slate-700/80 text-slate-300' : 'bg-white/85 border-slate-300 text-slate-700'
+                isDark
+                  ? "bg-slate-900/80 border-slate-700/80 text-slate-300"
+                  : "bg-white/85 border-slate-300 text-slate-700"
               }`}
             >
               <span className="text-[10px] text-slate-400">Drift Speed:</span>
@@ -282,7 +292,9 @@ export default function LandingPage({ enterAuth, enterApp, isAuthenticated, onSi
                 type="button"
                 onClick={() => setInteractiveSpeed(0.5)}
                 className={`px-1.5 py-0.5 rounded text-[11px] font-semibold transition-colors cursor-pointer ${
-                  interactiveSpeed === 0.5 ? 'bg-indigo-600 text-white' : 'hover:text-indigo-400'
+                  interactiveSpeed === 0.5
+                    ? "bg-indigo-600 text-white"
+                    : "hover:text-indigo-400"
                 }`}
               >
                 0.5x
@@ -291,7 +303,9 @@ export default function LandingPage({ enterAuth, enterApp, isAuthenticated, onSi
                 type="button"
                 onClick={() => setInteractiveSpeed(1)}
                 className={`px-1.5 py-0.5 rounded text-[11px] font-semibold transition-colors cursor-pointer ${
-                  interactiveSpeed === 1 ? 'bg-indigo-600 text-white' : 'hover:text-indigo-400'
+                  interactiveSpeed === 1
+                    ? "bg-indigo-600 text-white"
+                    : "hover:text-indigo-400"
                 }`}
               >
                 1x
@@ -300,7 +314,9 @@ export default function LandingPage({ enterAuth, enterApp, isAuthenticated, onSi
                 type="button"
                 onClick={() => setInteractiveSpeed(2)}
                 className={`px-1.5 py-0.5 rounded text-[11px] font-semibold transition-colors cursor-pointer ${
-                  interactiveSpeed === 2 ? 'bg-indigo-600 text-white' : 'hover:text-indigo-400'
+                  interactiveSpeed === 2
+                    ? "bg-indigo-600 text-white"
+                    : "hover:text-indigo-400"
                 }`}
               >
                 2x
@@ -309,18 +325,17 @@ export default function LandingPage({ enterAuth, enterApp, isAuthenticated, onSi
           </div>
 
           <h1 className="text-4xl sm:text-6xl md:text-7xl tracking-tight leading-[1.1] mb-6">
-            Audit Every Chunk.{' '}
-            <span className="bg-gradient-to-r from-indigo-500 via-sky-400 to-indigo-300 bg-clip-text text-transparent">
-              Verify Every Answer.
-            </span>
+            Audit Every Chunk. <span className="">Verify Every Answer.</span>
           </h1>
 
           <p
             className={`max-w-3xl mx-auto text-base font-extralight sm:text-xl leading-relaxed mb-10 ${
-              isDark ? 'text-slate-300' : 'text-slate-600'
+              isDark ? "text-slate-300" : "text-slate-600"
             }`}
           >
-            A high-precision RAG Studio combining local Ollama neural embeddings, PostgreSQL vector distance searching, and CrossEncoder rerankers. Inspect every chunk trace before generating answers.
+            A high-precision RAG Studio combining local Ollama neural
+            embeddings, PostgreSQL vector distance searching, and CrossEncoder
+            rerankers. Inspect every chunk trace before generating answers.
           </p>
 
           {/* Proper Spaced CTA Buttons */}
@@ -328,9 +343,11 @@ export default function LandingPage({ enterAuth, enterApp, isAuthenticated, onSi
             <button
               type="button"
               onClick={isAuthenticated ? enterApp : enterAuth}
-              className="w-full sm:w-auto px-8 py-4 rounded-2xl font-bold text-base bg-gradient-to-r from-indigo-600 via-indigo-600 to-sky-600 text-white hover:from-indigo-500 hover:to-sky-500 shadow-xl shadow-indigo-600/30 transition-all flex items-center justify-center gap-3 cursor-pointer group"
+              className="w-full sm:w-auto px-8 py-4 rounded-2xl font-bold bg-slate-900/80 text-base  text-white hover:from-indigo-500 hover:to-sky-500 shadow-xl  transition-all flex items-center justify-center gap-3 cursor-pointer group"
             >
-              <span>{isAuthenticated ? 'Open Studio Workspace' : 'Get Started Free'}</span>
+              <span>
+                {isAuthenticated ? "Open Studio Workspace" : "Get Started Free"}
+              </span>
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </button>
 
@@ -338,8 +355,8 @@ export default function LandingPage({ enterAuth, enterApp, isAuthenticated, onSi
               href="#architecture"
               className={`w-full sm:w-auto px-7 py-4 rounded-2xl font-semibold text-base border transition-all flex items-center justify-center gap-2 ${
                 isDark
-                  ? 'border-slate-800 bg-slate-900/80 text-slate-200 hover:bg-slate-800 hover:border-slate-700'
-                  : 'border-slate-300 bg-white text-slate-800 hover:bg-slate-100 shadow-xs'
+                  ? "border-slate-800 bg-slate-900/80 text-slate-200 hover:bg-slate-800 hover:border-slate-700"
+                  : "border-slate-300 bg-white text-slate-800 hover:bg-slate-100 shadow-xs"
               }`}
             >
               <span>Explore Architecture</span>
@@ -351,35 +368,55 @@ export default function LandingPage({ enterAuth, enterApp, isAuthenticated, onSi
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-4xl mx-auto">
             <div
               className={`p-4 rounded-2xl border ${
-                isDark ? 'bg-slate-900/50 border-slate-800/80' : 'bg-white border-slate-200 shadow-xs'
+                isDark
+                  ? "bg-slate-900/50 border-slate-800/80"
+                  : "bg-white border-slate-200 shadow-xs"
               }`}
             >
-              <div className="text-2xl sm:text-3xl  text-indigo-500">768-D</div>
-              <div className="text-xs text-slate-400 mt-1 font-medium">Nomic Embeddings</div>
+              <div className="text-2xl sm:text-3xl ">768-D</div>
+              <div className="text-xs text-slate-400 mt-1 font-medium">
+                Nomic Embeddings
+              </div>
             </div>
             <div
               className={`p-4 rounded-2xl border ${
-                isDark ? 'bg-slate-900/50 border-slate-800/80' : 'bg-white border-slate-200 shadow-xs'
+                isDark
+                  ? "bg-slate-900/50 border-slate-800/80"
+                  : "bg-white border-slate-200 shadow-xs"
               }`}
             >
-              <div className="text-2xl sm:text-3xl  text-sky-400">&lt; 50ms</div>
-              <div className="text-xs text-slate-400 mt-1 font-medium">Vector Search Latency</div>
+              <div className="text-2xl sm:text-3xl">
+                &lt; 50ms
+              </div>
+              <div className="text-xs text-slate-400 mt-1 font-medium">
+                Vector Search Latency
+              </div>
             </div>
             <div
               className={`p-4 rounded-2xl border ${
-                isDark ? 'bg-slate-900/50 border-slate-800/80' : 'bg-white border-slate-200 shadow-xs'
+                isDark
+                  ? "bg-slate-900/50 border-slate-800/80"
+                  : "bg-white border-slate-200 shadow-xs"
               }`}
             >
-              <div className="text-2xl sm:text-3xl  text-indigo-400">100%</div>
-              <div className="text-xs text-slate-400 mt-1 font-medium">Local Data Privacy</div>
+              <div className="text-2xl sm:text-3xl ">100%</div>
+              <div className="text-xs text-slate-400 mt-1 font-medium">
+                Local Data Privacy
+              </div>
             </div>
             <div
               className={`p-4 rounded-2xl border ${
-                isDark ? 'bg-slate-900/50 border-slate-800/80' : 'bg-white border-slate-200 shadow-xs'
+                isDark
+                  ? "bg-slate-900/50 border-slate-800/80"
+                  : "bg-white border-slate-200 shadow-xs"
               }`}
             >
-              <div className="text-2xl sm:text-3xl  text-emerald-400">Unified</div>
-              <div className="text-xs text-slate-400 mt-1 font-medium">Frontend + Backend Server</div>
+              <div className="text-2xl sm:text-3xl ">
+                Unified
+              </div>
+              <div className="text-xs text-slate-400 mt-1 font-medium">
+                Frontend + Backend Server
+              </div>
             </div>
           </div>
         </div>
@@ -388,7 +425,10 @@ export default function LandingPage({ enterAuth, enterApp, isAuthenticated, onSi
       {/* ========================================================================= */}
       {/* 3. VISUAL RAG ARCHITECTURE SHOWCASE (WITH SCREENSHOTS) */}
       {/* ========================================================================= */}
-      <section id="architecture" className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+      <section
+        id="architecture"
+        className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto"
+      >
         <div className="text-center max-w-3xl mx-auto mb-12">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 mb-3">
             <Layers className="w-3.5 h-3.5" />
@@ -397,8 +437,12 @@ export default function LandingPage({ enterAuth, enterApp, isAuthenticated, onSi
           <h2 className="text-3xl sm:text-4xl  tracking-tight">
             Visual RAG Architecture & Ingestion Flow
           </h2>
-          <p className={`mt-3 text-base sm:text-lg ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-            Click through our architectural diagrams below to explore how knowledge ingestion, cryptographic security, and neural compute work in unison.
+          <p
+            className={`mt-3 text-base sm:text-lg ${isDark ? "text-slate-400" : "text-slate-600"}`}
+          >
+            Click through our architectural diagrams below to explore how
+            knowledge ingestion, cryptographic security, and neural compute work
+            in unison.
           </p>
         </div>
 
@@ -414,11 +458,11 @@ export default function LandingPage({ enterAuth, enterApp, isAuthenticated, onSi
                 className={`px-5 py-3 rounded-2xl text-sm font-semibold border transition-all flex items-center gap-2 cursor-pointer ${
                   isSelected
                     ? isDark
-                      ? 'bg-indigo-600/20 border-indigo-500 text-white shadow-lg shadow-indigo-500/10'
-                      : 'bg-indigo-50 border-indigo-500 text-indigo-700 shadow-sm'
+                      ? "bg-indigo-600/20 border-indigo-500 text-white shadow-lg shadow-indigo-500/10"
+                      : "bg-indigo-50 border-indigo-500 text-indigo-700 shadow-sm"
                     : isDark
-                    ? 'border-slate-800 bg-slate-900/60 text-slate-400 hover:text-white hover:border-slate-700'
-                    : 'border-slate-200 bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                      ? "border-slate-800 bg-slate-900/60 text-slate-400 hover:text-white hover:border-slate-700"
+                      : "border-slate-200 bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-50"
                 }`}
               >
                 <span className="w-2 h-2 rounded-full bg-indigo-400" />
@@ -427,11 +471,11 @@ export default function LandingPage({ enterAuth, enterApp, isAuthenticated, onSi
                   className={`text-[10px] px-2 py-0.5 rounded-full font-mono ${
                     isSelected
                       ? isDark
-                        ? 'bg-indigo-500/30 text-indigo-300'
-                        : 'bg-indigo-200 text-indigo-800'
+                        ? "bg-indigo-500/30 text-indigo-300"
+                        : "bg-indigo-200 text-indigo-800"
                       : isDark
-                      ? 'bg-slate-800 text-slate-400'
-                      : 'bg-slate-100 text-slate-500'
+                        ? "bg-slate-800 text-slate-400"
+                        : "bg-slate-100 text-slate-500"
                   }`}
                 >
                   {item.badge}
@@ -444,7 +488,9 @@ export default function LandingPage({ enterAuth, enterApp, isAuthenticated, onSi
         {/* Active Architecture Display Card */}
         <div
           className={`rounded-3xl border overflow-hidden transition-all duration-300 shadow-2xl ${
-            isDark ? 'bg-slate-900/80 border-slate-800' : 'bg-white border-slate-200 shadow-slate-200/60'
+            isDark
+              ? "bg-slate-900/80 border-slate-800"
+              : "bg-white border-slate-200 shadow-slate-200/60"
           }`}
         >
           <div className="grid lg:grid-cols-12 gap-8 p-6 sm:p-8 lg:p-10 items-center">
@@ -457,7 +503,9 @@ export default function LandingPage({ enterAuth, enterApp, isAuthenticated, onSi
                 <h3 className="text-2xl sm:text-3xl font-bold mt-1 tracking-tight">
                   {currentScreenshot.title}
                 </h3>
-                <p className={`mt-3 text-sm sm:text-base leading-relaxed ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
+                <p
+                  className={`mt-3 text-sm sm:text-base leading-relaxed ${isDark ? "text-slate-300" : "text-slate-600"}`}
+                >
                   {currentScreenshot.desc}
                 </p>
               </div>
@@ -469,7 +517,11 @@ export default function LandingPage({ enterAuth, enterApp, isAuthenticated, onSi
                     <div className="w-5 h-5 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-400 shrink-0 mt-0.5">
                       <CheckCircle2 className="w-3.5 h-3.5" />
                     </div>
-                    <span className={isDark ? 'text-slate-200' : 'text-slate-700'}>{h}</span>
+                    <span
+                      className={isDark ? "text-slate-200" : "text-slate-700"}
+                    >
+                      {h}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -491,7 +543,9 @@ export default function LandingPage({ enterAuth, enterApp, isAuthenticated, onSi
             <div className="lg:col-span-7">
               <div
                 className={`relative rounded-2xl overflow-hidden border p-2 group transition-all ${
-                  isDark ? 'bg-slate-950 border-slate-800' : 'bg-slate-50 border-slate-200'
+                  isDark
+                    ? "bg-slate-950 border-slate-800"
+                    : "bg-slate-50 border-slate-200"
                 }`}
               >
                 <img
@@ -509,11 +563,13 @@ export default function LandingPage({ enterAuth, enterApp, isAuthenticated, onSi
         </div>
       </section>
 
-
       {/* ========================================================================= */}
       {/* 5. INTERACTIVE RAG SIMULATOR (QUERY TO CHUNK TESTER) */}
       {/* ========================================================================= */}
-      <section id="pipeline-flow" className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+      <section
+        id="pipeline-flow"
+        className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto"
+      >
         <div className="text-center max-w-3xl mx-auto mb-12">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 mb-3">
             <Terminal className="w-3.5 h-3.5" />
@@ -522,18 +578,26 @@ export default function LandingPage({ enterAuth, enterApp, isAuthenticated, onSi
           <h2 className="text-3xl sm:text-4xl  tracking-tight">
             Experience Transparent Retrieval
           </h2>
-          <p className={`mt-3 text-base sm:text-lg ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-            Type a query or select a preset to see the 5 discrete pipeline stages executed in real-time.
+          <p
+            className={`mt-3 text-base sm:text-lg ${isDark ? "text-slate-400" : "text-slate-600"}`}
+          >
+            Type a query or select a preset to see the 5 discrete pipeline
+            stages executed in real-time.
           </p>
         </div>
 
         <div
           className={`rounded-3xl border p-6 sm:p-10 shadow-2xl ${
-            isDark ? 'bg-slate-900/90 border-slate-800' : 'bg-white border-slate-200 shadow-slate-200/70'
+            isDark
+              ? "bg-slate-900/90 border-slate-800"
+              : "bg-white border-slate-200 shadow-slate-200/70"
           }`}
         >
           {/* Query Form */}
-          <form onSubmit={handleSimulate} className="flex flex-col sm:flex-row gap-3">
+          <form
+            onSubmit={handleSimulate}
+            className="flex flex-col sm:flex-row gap-3"
+          >
             <div className="relative flex-1">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
               <input
@@ -543,8 +607,8 @@ export default function LandingPage({ enterAuth, enterApp, isAuthenticated, onSi
                 placeholder="Ask a technical or legal document question..."
                 className={`w-full pl-12 pr-4 py-3.5 rounded-2xl text-sm border outline-none transition-all ${
                   isDark
-                    ? 'bg-slate-950 border-slate-700 text-white focus:border-indigo-500'
-                    : 'bg-slate-50 border-slate-300 text-slate-900 focus:border-indigo-600 focus:bg-white'
+                    ? "bg-slate-950 border-slate-700 text-white focus:border-indigo-500"
+                    : "bg-slate-50 border-slate-300 text-slate-900 focus:border-indigo-600 focus:bg-white"
                 }`}
               />
             </div>
@@ -571,9 +635,9 @@ export default function LandingPage({ enterAuth, enterApp, isAuthenticated, onSi
           <div className="flex flex-wrap items-center gap-2 mt-4">
             <span className="text-xs text-slate-400">Try sample queries:</span>
             {[
-              'What is the refund and cancellation policy in Section 4.2?',
-              'How does pgvector cosine distance calculate nearest neighbors?',
-              'Explain the CrossEncoder thresholding formula for chunk rejection.',
+              "What is the refund and cancellation policy in Section 4.2?",
+              "How does pgvector cosine distance calculate nearest neighbors?",
+              "Explain the CrossEncoder thresholding formula for chunk rejection.",
             ].map((q, idx) => (
               <button
                 key={idx}
@@ -581,8 +645,8 @@ export default function LandingPage({ enterAuth, enterApp, isAuthenticated, onSi
                 onClick={() => setSimQuery(q)}
                 className={`text-xs px-3 py-1.5 rounded-xl border transition-colors ${
                   isDark
-                    ? 'border-slate-800 bg-slate-950 text-slate-300 hover:text-white hover:border-slate-700'
-                    : 'border-slate-200 bg-slate-100 text-slate-700 hover:bg-slate-200'
+                    ? "border-slate-800 bg-slate-950 text-slate-300 hover:text-white hover:border-slate-700"
+                    : "border-slate-200 bg-slate-100 text-slate-700 hover:bg-slate-200"
                 }`}
               >
                 {q}
@@ -594,41 +658,46 @@ export default function LandingPage({ enterAuth, enterApp, isAuthenticated, onSi
           <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4 mt-8">
             {[
               {
-                step: '1',
-                title: 'Query Rewriting',
-                detail: 'Context-free standalone query parsed from chat memory.',
-                status: '100% Resolved',
+                step: "1",
+                title: "Query Rewriting",
+                detail:
+                  "Context-free standalone query parsed from chat memory.",
+                status: "100% Resolved",
               },
               {
-                step: '2',
-                title: 'Ollama Embedding',
-                detail: '768-D dense float32 vector generated via nomic-embed-text.',
-                status: 'Generated in 18ms',
+                step: "2",
+                title: "Ollama Embedding",
+                detail:
+                  "768-D dense float32 vector generated via nomic-embed-text.",
+                status: "Generated in 18ms",
               },
               {
-                step: '3',
-                title: 'pgvector Search',
-                detail: 'Top 10 candidates filtered using cosine distance < 0.35.',
-                status: '10 Chunks Found',
+                step: "3",
+                title: "pgvector Search",
+                detail:
+                  "Top 10 candidates filtered using cosine distance < 0.35.",
+                status: "10 Chunks Found",
               },
               {
-                step: '4',
-                title: 'CrossEncoder Rerank',
-                detail: 'Full pairwise token cross-attention ordered top 5 chunks.',
-                status: 'Relevance Score: 0.94',
+                step: "4",
+                title: "CrossEncoder Rerank",
+                detail:
+                  "Full pairwise token cross-attention ordered top 5 chunks.",
+                status: "Relevance Score: 0.94",
               },
               {
-                step: '5',
-                title: 'Context Assembly',
-                detail: 'Approved chunk tokens injected into Llama 3.2 system prompt.',
-                status: 'Ready for LLM',
+                step: "5",
+                title: "Context Assembly",
+                detail:
+                  "Approved chunk tokens injected into Llama 3.2 system prompt.",
+                status: "Ready for LLM",
               },
             ].map((item, idx) => (
               <div
                 key={idx}
                 className={`p-4 rounded-2xl border transition-all ${
-                  simActive ? 'animate-pulse border-indigo-500/50' : ''
-                } ${isDark ? 'bg-slate-950 border-slate-800' : 'bg-slate-50 border-slate-200'}`}
+                  simActive ? "animate-pulse border-indigo-500/50" : ""
+                } ${isDark ? "bg-slate-950 border-slate-800" : "bg-slate-50 border-slate-200"}`}
               >
                 <div className="flex items-center justify-between mb-2">
                   <span className="w-6 h-6 rounded-lg bg-indigo-500/20 text-indigo-400 font-mono text-xs font-bold flex items-center justify-center">
@@ -639,7 +708,9 @@ export default function LandingPage({ enterAuth, enterApp, isAuthenticated, onSi
                   </span>
                 </div>
                 <h4 className="font-bold text-sm mb-1">{item.title}</h4>
-                <p className={`text-xs leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+                <p
+                  className={`text-xs leading-relaxed ${isDark ? "text-slate-400" : "text-slate-600"}`}
+                >
                   {item.detail}
                 </p>
               </div>
@@ -651,7 +722,10 @@ export default function LandingPage({ enterAuth, enterApp, isAuthenticated, onSi
       {/* ========================================================================= */}
       {/* 6. FEATURES GRID */}
       {/* ========================================================================= */}
-      <section id="features" className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+      <section
+        id="features"
+        className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto"
+      >
         <div className="text-center max-w-3xl mx-auto mb-16">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 mb-3">
             <Sliders className="w-3.5 h-3.5" />
@@ -660,51 +734,73 @@ export default function LandingPage({ enterAuth, enterApp, isAuthenticated, onSi
           <h2 className="text-3xl sm:text-4xl  tracking-tight">
             Designed for Production-Grade Accuracy
           </h2>
-          <p className={`mt-3 text-base sm:text-lg ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-            Everything you need to run, audit, and optimize self-hosted RAG without cloud lock-in.
+          <p
+            className={`mt-3 text-base sm:text-lg ${isDark ? "text-slate-400" : "text-slate-600"}`}
+          >
+            Everything you need to run, audit, and optimize self-hosted RAG
+            without cloud lock-in.
           </p>
         </div>
 
         <div className="grid md:grid-cols-3 gap-8">
           <div
             className={`p-8 rounded-3xl border transition-all hover:translate-y-[-2px] ${
-              isDark ? 'bg-slate-900/60 border-slate-800' : 'bg-white border-slate-200 shadow-sm'
+              isDark
+                ? "bg-slate-900/60 border-slate-800"
+                : "bg-white border-slate-200 shadow-sm"
             }`}
           >
             <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 mb-6">
               <FileText className="w-6 h-6" />
             </div>
-            <h3 className="text-xl font-bold mb-2">Automated Document Ingestion</h3>
-            <p className={`text-sm leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-              Upload individual files or entire directory trees. Supports PDF, DOCX, CSV, Excel, TXT, JSON, and images with automatic recursive splitting.
+            <h3 className="text-xl font-bold mb-2">
+              Automated Document Ingestion
+            </h3>
+            <p
+              className={`text-sm leading-relaxed ${isDark ? "text-slate-400" : "text-slate-600"}`}
+            >
+              Upload individual files or entire directory trees. Supports PDF,
+              DOCX, CSV, Excel, TXT, JSON, and images with automatic recursive
+              splitting.
             </p>
           </div>
 
           <div
             className={`p-8 rounded-3xl border transition-all hover:translate-y-[-2px] ${
-              isDark ? 'bg-slate-900/60 border-slate-800' : 'bg-white border-slate-200 shadow-sm'
+              isDark
+                ? "bg-slate-900/60 border-slate-800"
+                : "bg-white border-slate-200 shadow-sm"
             }`}
           >
             <div className="w-12 h-12 rounded-2xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400 mb-6">
               <Database className="w-6 h-6" />
             </div>
             <h3 className="text-xl font-bold mb-2">Native pgvector Indexing</h3>
-            <p className={`text-sm leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-              Stores high-density vectors directly alongside relational metadata in PostgreSQL 18. Zero external SaaS vector databases needed.
+            <p
+              className={`text-sm leading-relaxed ${isDark ? "text-slate-400" : "text-slate-600"}`}
+            >
+              Stores high-density vectors directly alongside relational metadata
+              in PostgreSQL 18. Zero external SaaS vector databases needed.
             </p>
           </div>
 
           <div
             className={`p-8 rounded-3xl border transition-all hover:translate-y-[-2px] ${
-              isDark ? 'bg-slate-900/60 border-slate-800' : 'bg-white border-slate-200 shadow-sm'
+              isDark
+                ? "bg-slate-900/60 border-slate-800"
+                : "bg-white border-slate-200 shadow-sm"
             }`}
           >
             <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 mb-6">
               <ShieldCheck className="w-6 h-6" />
             </div>
             <h3 className="text-xl font-bold mb-2">Relevance Guardrails</h3>
-            <p className={`text-sm leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-              Enforces strict similarity and reranking cutoffs. If retrieved chunks are not verifiably related to the query, RAG Studio cleanly falls back rather than hallucinating.
+            <p
+              className={`text-sm leading-relaxed ${isDark ? "text-slate-400" : "text-slate-600"}`}
+            >
+              Enforces strict similarity and reranking cutoffs. If retrieved
+              chunks are not verifiably related to the query, RAG Studio cleanly
+              falls back rather than hallucinating.
             </p>
           </div>
         </div>
@@ -713,41 +809,50 @@ export default function LandingPage({ enterAuth, enterApp, isAuthenticated, onSi
       {/* ========================================================================= */}
       {/* 7. FREQUENTLY ASKED QUESTIONS */}
       {/* ========================================================================= */}
-      <section id="faq" className="py-20 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto">
+      <section
+        id="faq"
+        className="py-20 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto"
+      >
         <div className="text-center mb-14">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 mb-3">
             <HelpCircle className="w-3.5 h-3.5" />
             Clear Answers
           </div>
-          <h2 className="text-3xl sm:text-4xl  tracking-tight">Frequently Asked Questions</h2>
+          <h2 className="text-3xl sm:text-4xl  tracking-tight">
+            Frequently Asked Questions
+          </h2>
         </div>
 
         <div className="space-y-4">
           {[
             {
-              q: 'How does the single unified Docker container work?',
-              a: 'A multi-stage Dockerfile compiles the React frontend with Vite in stage 1, then mounts the production build directly into FastAPI in stage 2. A single container port (8000) serves both the REST API, SPA routing, and static assets.',
+              q: "How does the single unified Docker container work?",
+              a: "A multi-stage Dockerfile compiles the React frontend with Vite in stage 1, then mounts the production build directly into FastAPI in stage 2. A single container port (8000) serves both the REST API, SPA routing, and static assets.",
             },
             {
-              q: 'Can this run completely offline without an internet connection?',
-              a: 'Yes! Ollama models (such as llama3.2:1b and nomic-embed-text) and PostgreSQL run completely locally. Once models are cached, all embeddings, chunking, and inference execute on your own machine with zero data leaving your network.',
+              q: "Can this run completely offline without an internet connection?",
+              a: "Yes! Ollama models (such as llama3.2:1b and nomic-embed-text) and PostgreSQL run completely locally. Once models are cached, all embeddings, chunking, and inference execute on your own machine with zero data leaving your network.",
             },
             {
-              q: 'How does RAG Studio prevent document hallucination?',
-              a: 'Before sending retrieved chunks to the LLM, a strict relevance check compares cosine distance and CrossEncoder pairwise scores. If the best retrieved score falls below our relevance cutoff, the system alerts you and refuses to pass incorrect context.',
+              q: "How does RAG Studio prevent document hallucination?",
+              a: "Before sending retrieved chunks to the LLM, a strict relevance check compares cosine distance and CrossEncoder pairwise scores. If the best retrieved score falls below our relevance cutoff, the system alerts you and refuses to pass incorrect context.",
             },
           ].map((item, index) => (
             <details
               key={index}
               className={`p-6 rounded-2xl border transition-all ${
-                isDark ? 'bg-slate-900/60 border-slate-800' : 'bg-white border-slate-200 shadow-xs'
+                isDark
+                  ? "bg-slate-900/60 border-slate-800"
+                  : "bg-white border-slate-200 shadow-xs"
               }`}
             >
               <summary className="font-bold text-base cursor-pointer select-none flex items-center justify-between">
                 <span>{item.q}</span>
                 <ChevronRight className="w-4 h-4 text-slate-400 transition-transform details-open:rotate-90" />
               </summary>
-              <p className={`mt-4 text-sm leading-relaxed ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
+              <p
+                className={`mt-4 text-sm leading-relaxed ${isDark ? "text-slate-300" : "text-slate-600"}`}
+              >
                 {item.a}
               </p>
             </details>
@@ -762,8 +867,8 @@ export default function LandingPage({ enterAuth, enterApp, isAuthenticated, onSi
         <div
           className={`relative overflow-hidden rounded-3xl p-10 sm:p-16 text-center border shadow-2xl ${
             isDark
-              ? 'bg-gradient-to-br from-indigo-950 via-slate-900 to-slate-950 border-slate-800'
-              : 'bg-gradient-to-br from-indigo-600 via-indigo-700 to-violet-800 text-white border-indigo-500'
+              ? "bg-gradient-to-br from-indigo-950 via-slate-900 to-slate-950 border-slate-800"
+              : "bg-gradient-to-br from-indigo-600 via-indigo-700 to-violet-800 text-white border-indigo-500"
           }`}
         >
           <div className="absolute -top-24 -left-24 w-72 h-72 rounded-full bg-indigo-500/20 blur-3xl pointer-events-none" />
@@ -774,10 +879,11 @@ export default function LandingPage({ enterAuth, enterApp, isAuthenticated, onSi
           </h2>
           <p
             className={`max-w-2xl mx-auto text-base sm:text-lg mb-10 relative z-10 ${
-              isDark ? 'text-slate-300' : 'text-indigo-100'
+              isDark ? "text-slate-300" : "text-indigo-100"
             }`}
           >
-            Launch the unified workspace now. Ingest folders, audit chunk distributions, inspect rerankings, and query verified facts.
+            Launch the unified workspace now. Ingest folders, audit chunk
+            distributions, inspect rerankings, and query verified facts.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 relative z-10">
@@ -786,7 +892,11 @@ export default function LandingPage({ enterAuth, enterApp, isAuthenticated, onSi
               onClick={isAuthenticated ? enterApp : enterAuth}
               className="w-full sm:w-auto px-9 py-4 rounded-2xl font-bold text-base bg-white text-indigo-950 hover:bg-slate-100 shadow-xl transition-all cursor-pointer flex items-center justify-center gap-2"
             >
-              <span>{isAuthenticated ? 'Open Studio Workspace' : 'Sign in to Workspace'}</span>
+              <span>
+                {isAuthenticated
+                  ? "Open Studio Workspace"
+                  : "Sign in to Workspace"}
+              </span>
               <ArrowRight className="w-5 h-5 text-indigo-600" />
             </button>
           </div>
@@ -798,7 +908,7 @@ export default function LandingPage({ enterAuth, enterApp, isAuthenticated, onSi
       {/* ========================================================================= */}
       <footer
         className={`border-t py-12 px-4 sm:px-6 lg:px-8 transition-colors ${
-          isDark ? 'border-slate-900 bg-[#030509]' : 'border-slate-200 bg-white'
+          isDark ? "border-slate-900 bg-[#030509]" : "border-slate-200 bg-white"
         }`}
       >
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
@@ -806,7 +916,9 @@ export default function LandingPage({ enterAuth, enterApp, isAuthenticated, onSi
             <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-black">
               ◈
             </div>
-            <span className="font-bold text-sm tracking-tight">RAG STUDIO • Brisk AI</span>
+            <span className="font-bold text-sm tracking-tight">
+              RAG STUDIO • Brisk AI
+            </span>
           </div>
 
           <p className="text-xs text-slate-500">
@@ -814,17 +926,23 @@ export default function LandingPage({ enterAuth, enterApp, isAuthenticated, onSi
           </p>
 
           <div className="flex items-center gap-4 text-xs text-slate-400">
-            <a href="#architecture" className="hover:text-indigo-400 transition-colors">
+            <a
+              href="#architecture"
+              className="hover:text-indigo-400 transition-colors"
+            >
               Architecture
             </a>
-            <a href="#features" className="hover:text-indigo-400 transition-colors">
+            <a
+              href="#features"
+              className="hover:text-indigo-400 transition-colors"
+            >
               Features
             </a>
             <button
               onClick={isAuthenticated ? enterApp : enterAuth}
               className="text-indigo-400 hover:underline"
             >
-              {isAuthenticated ? 'Workspace' : 'Sign in'}
+              {isAuthenticated ? "Workspace" : "Sign in"}
             </button>
           </div>
         </div>

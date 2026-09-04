@@ -22,7 +22,7 @@ import AuthPage from './components/AuthPage'
 import SignOutModal from './components/SignOutModal'
 import ThemeToggle from './components/ThemeToggle'
 
-const API = import.meta.env.VITE_API_URL ?? (import.meta.env.DEV ? 'http://localhost:8000' : '')
+const API = import.meta.env.VITE_API_URL ?? 'https://rag-studio.amanjalan.tech'
 
 const nav = [
   ['overview', 'Overview', FileText],
