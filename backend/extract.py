@@ -1,5 +1,7 @@
 import json
 import csv
+import os
+import shutil
 from pathlib import Path
 
 import pdfplumber
@@ -7,12 +9,56 @@ from pypdf import PdfReader
 from docx import Document as DocxDocument
 from openpyxl import load_workbook
 from pptx import Presentation
+import pytesseract
+from PIL import Image
 
 from bs4 import BeautifulSoup
 
 
 class UnsupportedFileTypeError(Exception):
     pass
+
+
+def _find_tesseract_executable(explicit_paths=None):
+    """Return the Tesseract binary path for Windows and Linux installs."""
+    candidates = []
+
+    for env_name in ("TESSERACT_PATH", "TESSERACT_CMD"):
+        value = os.environ.get(env_name)
+        if value:
+            candidates.append(value)
+
+    if explicit_paths:
+        candidates.extend(explicit_paths)
+
+    system_path = shutil.which("tesseract")
+    if system_path:
+        candidates.append(system_path)
+
+    common_windows_paths = [
+        r"C:\Program Files\Tesseract-OCR\tesseract.exe",
+        r"C:\Program Files (x86)\Tesseract-OCR\tesseract.exe",
+        str(Path.home() / "AppData" / "Local" / "Programs" / "Tesseract-OCR" / "tesseract.exe"),
+    ]
+    candidates.extend(common_windows_paths)
+
+    for candidate in candidates:
+        if not candidate:
+            continue
+        path = Path(candidate).expanduser()
+        if path.exists() and path.is_file():
+            return str(path)
+
+    return None
+
+
+def _ensure_tesseract_available():
+    """Set pytesseract's Tesseract path if it is installed but not on PATH."""
+    tesseract_executable = _find_tesseract_executable()
+    if tesseract_executable:
+        pytesseract.pytesseract.tesseract_cmd = tesseract_executable
+        return True
+    return False
 
 
 def extract_text(file_path: str) -> str:
@@ -29,6 +75,13 @@ def extract_text(file_path: str) -> str:
         ".pptx": _extract_pptx,
         ".html": _extract_html,
         ".htm": _extract_html,
+        ".jpg": _extract_image,
+        ".jpeg": _extract_image,
+        ".png": _extract_image,
+        ".gif": _extract_image,
+        ".bmp": _extract_image,
+        ".tiff": _extract_image,
+        ".webp": _extract_image,
     }
 
     if ext not in extractors:
@@ -168,3 +221,39 @@ def _extract_html(file_path: str) -> str:
     for tag in soup(["script", "style"]):
         tag.decompose()
     return soup.get_text(separator="\n").strip()
+
+
+def _extract_image(file_path: str) -> str:
+    """
+    Extract text from images using OCR (Tesseract).
+    Also extracts image metadata.
+    """
+    try:
+        if not _ensure_tesseract_available():
+            raise FileNotFoundError(
+                "Tesseract OCR is not installed or not in your PATH. "
+                "Install Tesseract and set TESSERACT_PATH or add it to PATH."
+            )
+
+        image = Image.open(file_path)
+        text_parts = []
+
+        # Add image metadata
+        file_name = Path(file_path).name
+        text_parts.append(f"--- Image File: {file_name} ---")
+        text_parts.append(f"Image size: {image.size[0]}x{image.size[1]} pixels")
+        text_parts.append(f"Image format: {image.format}")
+        text_parts.append("--- OCR Extracted Text ---")
+
+        # Extract text using Tesseract OCR
+        extracted_text = pytesseract.image_to_string(image)
+
+        if extracted_text.strip():
+            text_parts.append(extracted_text.strip())
+        else:
+            text_parts.append("[No text detected in image]")
+
+        return "\n".join(text_parts).strip()
+
+    except Exception as e:
+        raise UnsupportedFileTypeError(f"Failed to extract text from image {file_path}: {e}")

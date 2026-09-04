@@ -2,6 +2,7 @@ fastapi
 uvicorn[standard]
 sqlalchemy
 psycopg2-binary
+psycopg[binary]
 pgvector
 
 pydantic
@@ -9,6 +10,7 @@ pydantic[email]
 
 python-jose[cryptography]
 passlib[bcrypt]
+bcrypt==4.0.1
 
 python-dotenv
 
@@ -25,5 +27,12 @@ python-pptx
 beautifulsoup4
 lxml
 
+pytesseract
+Pillow
+pdf2image
+pdfplumber
+
 email-validator
 python-multipart
+resend
+langchain-text-splitters

@@ -131,15 +131,12 @@ def chat(
     if not chat_obj:
         raise HTTPException(status_code=404, detail="Chat not found")
 
-    # A selected document is mandatory for a document-grounded answer. This
-    # prevents accidental answers from another uploaded file.
-    if payload.document_id is None:
-        raise HTTPException(status_code=400, detail="Select a document before asking a question")
-    owned_document = db.query(Document.id).join(user_documents).filter(
-        Document.id == payload.document_id, user_documents.c.user_id == current_user.id
-    ).first()
-    if not owned_document:
-        raise HTTPException(status_code=404, detail="Selected document was not found")
+    if payload.document_id is not None:
+        owned_document = db.query(Document.id).join(user_documents).filter(
+            Document.id == payload.document_id, user_documents.c.user_id == current_user.id
+        ).first()
+        if not owned_document:
+            raise HTTPException(status_code=404, detail="Selected document was not found")
 
     # 1. Save user message
     user_msg = Message(chat_id=payload.chat_id, role="user", content=payload.message)
@@ -173,7 +170,7 @@ def chat(
     #   query -> vector search -> reranking -> relevance check
     # ============================================================
 
-    if is_broad_overview_query(payload.message):
+    if is_broad_overview_query(payload.message) and payload.document_id is not None:
 
         context_text = retrieve_document_overview_context(
             user_id=current_user.id,
@@ -236,6 +233,20 @@ def chat(
         trace["original_query"] = payload.message
         trace["rewritten_query"] = standalone_query
         trace["context_text"] = context_text
+        if trace.get("reranked_chunks"):
+            trace["source_documents"] = [
+                {"document_id": item["document_id"], "document_title": item["document_title"]}
+                for item in trace["reranked_chunks"]
+            ]
+            trace["source_file"] = trace["reranked_chunks"][0]["document_title"]
+        elif trace.get("vector_candidates"):
+            trace["source_documents"] = [
+                {"document_id": item["document_id"], "document_title": item["document_title"]}
+                for item in trace["vector_candidates"]
+            ]
+            trace["source_file"] = trace["vector_candidates"][0]["document_title"]
+        else:
+            trace["source_file"] = "Unknown"
 
     # 5. Build system prompt
     # ============================================================
@@ -244,8 +255,9 @@ def chat(
 
     if context_text:
 
+        source_line = trace.get("source_file") or "unknown source"
         system_prompt = f"""You are a helpful assistant answering questions
-about an uploaded document.
+about uploaded documents.
 
 Use ONLY the DOCUMENT CONTEXT provided below.
 
@@ -262,10 +274,15 @@ question. You should synthesize and summarize the information available
 across multiple chunks.
 
 If the information genuinely does not exist in the document context, clearly
-say that you could not find it in the uploaded document.
+say that you could not find it in the uploaded documents.
+
+At the end of your answer, add a single line in this exact format:
+Source document: {source_line}
 
 Do not use outside knowledge.
 Do not invent facts, numbers, or conclusions.
+
+Answer strictly using the retrieved context. Do not add general knowledge, examples, techniques, numbers, or recommendations unless they are explicitly supported by the retrieved documents. If the retrieved context does not contain enough information, say that the information is not available in the provided documents. Prefer examples and terminology appearing directly in the retrieved context.
 
 DOCUMENT CONTEXT:
 {context_text}

@@ -15,6 +15,8 @@ class Document(Base):
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String, nullable=False)
     source = Column(String, nullable=True)
+    source_path = Column(String, nullable=True)
+    index_markdown = Column(Text, nullable=True)
     content = Column(Text, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 

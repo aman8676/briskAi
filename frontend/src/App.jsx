@@ -1,9 +1,37 @@
-import { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useState } from 'react'
+import JSZip from 'jszip'
+import {
+  FileText,
+  Layers,
+  Cpu,
+  Info,
+  GitPullRequest,
+  MessageSquare,
+  Trash2,
+  LogOut,
+  Upload,
+  Plus,
+  Home,
+  CheckCircle2,
+  AlertTriangle,
+  Sparkles,
+} from 'lucide-react'
 
-const API = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+import LandingPage from './components/LandingPage'
+import AuthPage from './components/AuthPage'
+import SignOutModal from './components/SignOutModal'
+import ThemeToggle from './components/ThemeToggle'
+
+const API = import.meta.env.VITE_API_URL ?? (import.meta.env.DEV ? 'http://localhost:8000' : '')
+
 const nav = [
-  ['overview', 'Overview'], ['chunks', 'Chunks'], ['embeddings', 'Embeddings'],
-  ['metadata', 'Metadata'], ['pipeline', 'Retrieval flow'], ['chat', 'Ask your documents'], ['remove', 'Remove document'], ['logout', 'Log out'],
+  ['overview', 'Overview', FileText],
+  ['chunks', 'Chunks', Layers],
+  ['embeddings', 'Embeddings', Cpu],
+  ['metadata', 'Metadata', Info],
+  ['pipeline', 'Retrieval flow', GitPullRequest],
+  ['chat', 'Ask your documents', MessageSquare],
+  ['remove', 'Remove document', Trash2],
 ]
 
 const request = async (path, options = {}) => {
@@ -11,89 +39,667 @@ const request = async (path, options = {}) => {
   const headers = { ...(options.headers || {}) }
   if (token) headers.Authorization = `Bearer ${token}`
   const response = await fetch(`${API}${path}`, { ...options, headers })
-  if (!response.ok) throw new Error((await response.json().catch(() => ({}))).detail || 'Request failed')
+  if (!response.ok) {
+    const errorJson = await response.json().catch(() => ({}))
+    throw new Error(errorJson.detail || 'Request failed')
+  }
   return response.json()
 }
 
-function Auth({ onDone }) {
-  const resetToken = new URLSearchParams(window.location.search).get('reset_token')
-  const [mode, setMode] = useState(resetToken ? 'reset' : 'login'), [form, setForm] = useState({ username: '', email: '', password: '', confirmPassword: '' }), [error, setError] = useState('')
-  const setModeAndClear = nextMode => { setMode(nextMode); setError('') }
-  const submit = async e => {
-    e.preventDefault(); setError('')
-    try {
-      if (mode === 'signup') {
-        await request('/auth/signup', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) })
-        setError('Account created. Verify your email, then log in.'); setMode('login'); return
-      }
-      if (mode === 'forgot') {
-        await request('/auth/forgot-password', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: form.email }) })
-        setError('If an account exists for that email, a reset link has been sent.'); return
-      }
-      if (mode === 'reset') {
-        if (form.password !== form.confirmPassword) throw new Error('Passwords do not match')
-        await request('/auth/reset-password', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token: resetToken, new_password: form.password }) })
-        window.history.replaceState({}, '', window.location.pathname)
-        setError('Password reset successfully. You can now sign in.'); setMode('login'); return
-      }
-      const token = await request('/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: form.email, password: form.password }) })
-      localStorage.setItem('rag_token', token.access_token); onDone()
-    } catch (err) { setError(err.message) }
+export default function App() {
+  const [screen, setScreen] = useState(localStorage.getItem('rag_token') ? 'app' : 'landing')
+  const [theme, setTheme] = useState(() => localStorage.getItem('rag_theme') || 'dark')
+  const [showSignOutModal, setShowSignOutModal] = useState(false)
+
+  // Sync theme changes to documentElement
+  useEffect(() => {
+    localStorage.setItem('rag_theme', theme)
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark')
+      document.documentElement.setAttribute('data-theme', 'dark')
+      document.documentElement.style.colorScheme = 'dark'
+    } else {
+      document.documentElement.classList.remove('dark')
+      document.documentElement.setAttribute('data-theme', 'light')
+      document.documentElement.style.colorScheme = 'light'
+    }
+  }, [theme])
+
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'))
   }
-  const heading = mode === 'login' ? 'Sign in to your workspace' : mode === 'signup' ? 'Create your workspace' : mode === 'forgot' ? 'Reset your password' : 'Choose a new password'
-  const action = mode === 'login' ? 'Sign in' : mode === 'signup' ? 'Create account' : mode === 'forgot' ? 'Send reset link' : 'Reset password'
-  return <main className="min-h-screen bg-slate-950 p-6 text-white grid place-items-center"><section className="grid w-full max-w-5xl overflow-hidden rounded-3xl bg-white text-slate-900 shadow-2xl md:grid-cols-2"><div className="hidden bg-gradient-to-br from-indigo-600 via-violet-600 to-cyan-500 p-12 text-white md:block"><p className="text-sm font-bold tracking-widest">RAG STUDIO</p><h1 className="mt-16 text-5xl font-semibold leading-tight">Make every document answerable.</h1><p className="mt-5 text-indigo-100">Upload, inspect chunks, trace retrieval, and chat with your knowledge base.</p></div><form onSubmit={submit} className="p-8 sm:p-12"><p className="text-sm font-semibold text-indigo-600">{mode === 'forgot' || mode === 'reset' ? 'ACCOUNT RECOVERY' : 'WELCOME BACK'}</p><h2 className="mt-2 text-3xl font-bold">{heading}</h2>{mode === 'signup' && <Input label="Username" value={form.username} onChange={v => setForm({ ...form, username: v })} />}{mode !== 'reset' && <Input label="Email" type="email" value={form.email} onChange={v => setForm({ ...form, email: v })} />}{mode !== 'forgot' && <Input label={mode === 'reset' ? 'New password' : 'Password'} type="password" value={form.password} onChange={v => setForm({ ...form, password: v })} />}{mode === 'reset' && <Input label="Confirm new password" type="password" value={form.confirmPassword} onChange={v => setForm({ ...form, confirmPassword: v })} />}{error && <p className="mt-4 text-sm text-rose-600">{error}</p>}<button className="mt-6 w-full rounded-xl bg-indigo-600 py-3 font-semibold text-white hover:bg-indigo-700">{action}</button>{mode === 'login' && <button type="button" onClick={() => setModeAndClear('forgot')} className="mt-4 w-full text-sm text-indigo-600 hover:text-indigo-700">Forgot password?</button>}{mode === 'login' && <button type="button" onClick={() => setModeAndClear('signup')} className="mt-4 w-full text-sm text-slate-500">New here? Create an account</button>}{mode === 'signup' && <button type="button" onClick={() => setModeAndClear('login')} className="mt-4 w-full text-sm text-slate-500">Already have an account? Sign in</button>}{(mode === 'forgot' || mode === 'reset') && <button type="button" onClick={() => { window.history.replaceState({}, '', window.location.pathname); setModeAndClear('login') }} className="mt-4 w-full text-sm text-slate-500">Back to sign in</button>}</form></section></main>
-}
-function Input({ label, type = 'text', value, onChange }) { return <label className="mt-5 block text-sm font-medium">{label}<input required type={type} value={value} onChange={e => onChange(e.target.value)} className="mt-2 w-full rounded-xl border border-slate-200 p-3 outline-none focus:border-indigo-500" /></label> }
 
-function Landing({ enter }) { return <main className="min-h-screen bg-slate-950 text-white"><nav className="mx-auto flex max-w-6xl items-center justify-between p-6"><b>◈ RAG STUDIO</b><button onClick={enter} className="rounded-lg border border-slate-600 px-4 py-2 text-sm">Sign in</button></nav><section className="mx-auto max-w-5xl px-6 py-24 text-center"><p className="inline rounded-full border border-indigo-400/40 bg-indigo-400/10 px-4 py-2 text-sm text-indigo-200">Document intelligence, made transparent</p><h1 className="mt-8 text-5xl font-bold tracking-tight sm:text-7xl">See how your AI<br/><span className="text-indigo-400">finds the answer.</span></h1><p className="mx-auto mt-7 max-w-2xl text-lg leading-8 text-slate-300">A focused RAG workspace for ingesting documents, auditing chunks and embeddings, and asking context-aware questions.</p><button onClick={enter} className="mt-10 rounded-xl bg-indigo-500 px-6 py-3 font-semibold hover:bg-indigo-400">Open workspace →</button></section></main> }
-
-function Dashboard({ onLogout }) {
-  const [page, setPage] = useState('overview'), [documents, setDocuments] = useState([]), [selected, setSelected] = useState(null), [detail, setDetail] = useState([]), [chats, setChats] = useState([]), [chatId, setChatId] = useState(null), [messages, setMessages] = useState([]), [question, setQuestion] = useState(''), [notice, setNotice] = useState(''), [retrievalTrace, setRetrievalTrace] = useState(null)
-  const loadDocs = async () => { try { const result = await request('/documents'); setDocuments(result); if (!selected && result[0]) setSelected(result[0]) } catch (e) { setNotice(e.message) } }
-  const loadChats = async () => { try { setChats(await request('/chats')) } catch {} }
-  useEffect(() => { loadDocs(); loadChats() }, [])
-  useEffect(() => { if (!selected) return; const endpoint = page === 'chunks' ? 'chunks' : page === 'embeddings' ? 'embeddings' : page === 'metadata' ? 'metadata' : null; if (endpoint) request(`/documents/${selected.id}/${endpoint}`).then(x => setDetail(Array.isArray(x) ? x : [x])).catch(e => setNotice(e.message)) }, [page, selected])
-  const upload = async e => { const file = e.target.files?.[0]; if (!file) return; const data = new FormData(); data.append('file', file); try { setNotice('Uploading and creating embeddings…'); await request('/upload', { method: 'POST', body: data }); await loadDocs(); setNotice('Document processed successfully.') } catch (err) { setNotice(err.message) } }
-  const createChat = async () => { try { const c = await request('/chat/new', { method: 'POST' }); setChatId(c.chat_id); setMessages([]); await loadChats(); setPage('chat') } catch (e) { setNotice(e.message) } }
-  const openChat = async id => { setChatId(id); setPage('chat'); try { setMessages(await request(`/chat/${id}/history`)) } catch (e) { setNotice(e.message) } }
-  const clearChat = async id => { try { await request(`/chat/${id}`, { method: 'DELETE' }); if (chatId === id) { setChatId(null); setMessages([]); setRetrievalTrace(null) }; await loadChats() } catch (e) { setNotice(e.message) } }
-  const clearAllChats = async () => { try { await request('/chats', { method: 'DELETE' }); setChatId(null); setMessages([]); setRetrievalTrace(null); await loadChats(); setNotice('Chat history deleted.') } catch (e) { setNotice(e.message) } }
-  const logout = async () => {
+  const handleSignOutConfirm = async () => {
+    setShowSignOutModal(false)
     try {
       await request('/auth/logout', { method: 'POST' })
-    } catch (error) {
-      // Clear the local session even if the token has already expired or the API is unavailable.
-      console.error('Logout error:', error)
+    } catch (err) {
+      console.error('Logout error:', err)
     } finally {
       localStorage.removeItem('rag_token')
-      onLogout()
+      setScreen('landing')
     }
   }
-  useEffect(() => { if (page === 'logout') logout() }, [page])
-  const ask = async e => { e.preventDefault(); if (!question.trim()) return; if (!selected) { setNotice('Upload and select a document before asking a question.'); return } let id = chatId; if (!id) { const c = await request('/chat/new', { method: 'POST' }); id = c.chat_id; setChatId(id); await loadChats() } const text = question; setQuestion(''); setRetrievalTrace(null); setMessages(m => [...m, { role: 'user', content: text }, { role: 'assistant', content: '' }]); try { const trace = await request('/retrieval/inspect', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ question: text, document_id: selected.id }) }); setRetrievalTrace(trace); const token = localStorage.getItem('rag_token'); const r = await fetch(`${API}/chat`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ chat_id: id, message: text, document_id: selected.id }) }); if (!r.ok) throw new Error((await r.json().catch(() => ({}))).detail || 'Chat request failed'); const reader = r.body.getReader(), decoder = new TextDecoder(); let answer = ''; while (true) { const { done, value } = await reader.read(); if (done) break; answer += decoder.decode(value); setMessages(m => [...m.slice(0, -1), { role: 'assistant', content: answer }]) } } catch (err) { setNotice(err.message); setMessages(m => m.slice(0, -1)) } }
-  const title = nav.find(n => n[0] === page)?.[1]
-  return <div className="min-h-screen bg-slate-50 text-slate-900 lg:flex"><aside className="w-full bg-slate-950 p-5 text-slate-300 lg:min-h-screen lg:w-72"><b className="text-white">◈ RAG STUDIO</b><label className="mt-8 block cursor-pointer rounded-xl border border-dashed border-slate-600 p-4 text-sm hover:border-indigo-400"><input className="hidden" type="file" onChange={upload}/><span className="block font-semibold text-white">＋ Upload file</span><span className="mt-1 block text-xs">PDF, DOCX, TXT and more</span></label><div className="mt-7 space-y-1">{nav.map(([id, text]) => <button key={id} onClick={() => setPage(id)} className={`w-full rounded-lg px-3 py-2 text-left text-sm ${page === id ? 'bg-indigo-500 text-white' : 'hover:bg-slate-800'}`}>{text}</button>)}</div><div className="mt-8 border-t border-slate-800 pt-5"><div className="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-slate-500">Chat history <button onClick={createChat}>＋</button></div>{chats.map(c => <button key={c.chat_id} onClick={() => openChat(c.chat_id)} className="mt-2 block w-full truncate rounded px-2 py-1 text-left text-sm hover:bg-slate-800">Chat #{c.chat_id}</button>)}</div></aside><main className="min-w-0 flex-1 p-5 sm:p-9"><header className="mb-8 flex flex-wrap items-center justify-between gap-4"><div><p className="text-sm text-slate-500">Knowledge workspace</p><h1 className="text-3xl font-bold">{title}</h1></div>{documents.length > 0 && <select value={selected?.id} onChange={e => setSelected(documents.find(d => d.id === +e.target.value))} className="rounded-lg border bg-white p-2 text-sm">{documents.map(d => <option key={d.id} value={d.id}>{d.title}</option>)}</select>}</header>{notice && <p className="mb-5 rounded-lg bg-amber-50 p-3 text-sm text-amber-800">{notice}</p>}<Page page={page} docs={documents} doc={selected} detail={detail} messages={messages} question={question} setQuestion={setQuestion} ask={ask} /></main></div>
+
+  return (
+    <>
+      {screen === 'landing' && (
+        <LandingPage
+          enterAuth={() => setScreen('auth')}
+          enterApp={() => setScreen('app')}
+          isAuthenticated={Boolean(localStorage.getItem('rag_token'))}
+          onSignOut={() => setShowSignOutModal(true)}
+          theme={theme}
+          toggleTheme={toggleTheme}
+        />
+      )}
+
+      {screen === 'auth' && (
+        <AuthPage
+          onDone={() => setScreen('app')}
+          onBackToLanding={() => setScreen('landing')}
+          request={request}
+          theme={theme}
+          toggleTheme={toggleTheme}
+        />
+      )}
+
+      {screen === 'app' && (
+        <Dashboard
+          onLogoutClick={() => setShowSignOutModal(true)}
+          onHomeClick={() => setScreen('landing')}
+          theme={theme}
+          toggleTheme={toggleTheme}
+        />
+      )}
+
+      {/* Customized Dynamic Sign Out Modal */}
+      <SignOutModal
+        isOpen={showSignOutModal}
+        onClose={() => setShowSignOutModal(false)}
+        onConfirm={handleSignOutConfirm}
+        theme={theme}
+      />
+    </>
+  )
 }
 
+function Dashboard({ onLogoutClick, onHomeClick, theme, toggleTheme }) {
+  const [page, setPage] = useState('overview')
+  const [documents, setDocuments] = useState([])
+  const [selected, setSelected] = useState(null)
+  const [detail, setDetail] = useState([])
+  const [chats, setChats] = useState([])
+  const [chatId, setChatId] = useState(null)
+  const [messages, setMessages] = useState([])
+  const [question, setQuestion] = useState('')
+  const [notice, setNotice] = useState('')
+  const [retrievalTrace, setRetrievalTrace] = useState(null)
+  const [sourceBadge, setSourceBadge] = useState('')
 
-function Page({ page, docs, doc, detail, messages, question, setQuestion, ask }) {
-  if (page === 'remove') return <RemoveDocument docs={docs} selectedDocument={doc} />
-  if (page === 'overview') return <div><div className="grid gap-4 sm:grid-cols-3"><Metric label="Documents" value={docs.length}/><Metric label="Total chunks" value={docs.reduce((n, d) => n + d.chunk_count, 0)}/><Metric label="Selected document" value={doc?.chunk_count || '—'} suffix=" chunks"/></div><section className="mt-8 rounded-2xl bg-white p-6 shadow-sm"><h2 className="font-bold">Your documents</h2>{docs.length ? docs.map(d => <div key={d.id} className="mt-4 flex justify-between rounded-xl bg-slate-50 p-4 text-sm"><span>{d.title}</span><span>{d.chunk_count} chunks</span></div>) : <p className="mt-3 text-sm text-slate-500">Upload a document to start the ingestion pipeline.</p>}</section></div>
-  if (page === 'pipeline') return <Pipeline documentId={doc?.id} />
-  if (page === 'chat') return <ChatPanel doc={doc} messages={messages} question={question} setQuestion={setQuestion} ask={ask} />
-  if (page === 'chat') return <section className="flex min-h-[65vh] flex-col rounded-2xl bg-white shadow-sm"><div className="border-b p-5"><b>Document agent</b><p className="text-sm text-slate-500">Answers are grounded in relevant uploaded chunks when available.</p></div><div className="flex-1 space-y-4 p-5">{messages.length ? messages.map((m, i) => <div key={i} className={`max-w-3xl rounded-2xl p-4 text-sm leading-6 ${m.role === 'user' ? 'ml-auto bg-indigo-600 text-white' : 'bg-slate-100'}`}>{m.content || 'Thinking…'}</div>) : <p className="text-sm text-slate-500">Start a conversation about your documents.</p>}</div><form onSubmit={ask} className="flex gap-3 border-t p-4"><input value={question} onChange={e => setQuestion(e.target.value)} placeholder="Ask a question about your documents…" className="min-w-0 flex-1 rounded-xl border p-3 outline-none focus:border-indigo-500"/><button className="rounded-xl bg-indigo-600 px-5 font-semibold text-white">Send</button></form></section>
-  const heading = page === 'chunks' ? 'First 10 chunks' : page === 'embeddings' ? 'Embedding preview — first 5 chunks' : 'Document metadata and summary'
-  return <section><p className="mb-5 text-sm text-slate-500">{heading}</p>{doc ? <div className="space-y-4">{detail.map((item, i) => <article key={item.id || i} className="rounded-2xl bg-white p-5 shadow-sm"><div className="mb-3 flex justify-between"><b>{page === 'metadata' ? item.title : `Chunk ${item.chunk_index}`}</b>{item.embedding_dimensions && <span className="text-xs text-indigo-600">{item.embedding_dimensions} dimensions</span>}</div>{page === 'metadata' ? <><p className="text-sm text-slate-500">Source: {item.source || 'Unknown'} · {item.created_at ? new Date(item.created_at).toLocaleString() : ''}</p><ul className="mt-4 list-disc space-y-2 pl-5 text-sm">{item.key_points?.map((x, j) => <li key={j}>{x}</li>)}</ul></> : <><p className="whitespace-pre-wrap text-sm leading-6 text-slate-700">{item.content}</p>{item.embedding_preview && <code className="mt-4 block overflow-auto rounded bg-slate-950 p-3 text-xs text-emerald-300">[{item.embedding_preview.map(n => n.toFixed(4)).join(', ')}, …]</code>}</>}</article>)}</div> : <p className="rounded-xl bg-white p-6 text-slate-500">Upload and select a document first.</p>}</section>
+  const isDark = theme === 'dark'
+
+  const loadDocs = async () => {
+    try {
+      const result = await request('/documents')
+      setDocuments(result)
+      if (!selected && result.length > 0) setSelected(null)
+    } catch (e) {
+      setNotice(e.message)
+    }
+  }
+
+  const loadChats = async () => {
+    try {
+      setChats(await request('/chats'))
+    } catch {}
+  }
+
+  useEffect(() => {
+    loadDocs()
+    loadChats()
+  }, [])
+
+  useEffect(() => {
+    if (!selected) return
+    const endpoint =
+      page === 'chunks' ? 'chunks' : page === 'embeddings' ? 'embeddings' : page === 'metadata' ? 'metadata' : null
+    if (endpoint) {
+      request(`/documents/${selected.id}/${endpoint}`)
+        .then((x) => setDetail(Array.isArray(x) ? x : [x]))
+        .catch((e) => setNotice(e.message))
+    }
+  }, [page, selected])
+
+  const upload = async (e) => {
+    const files = e.target.files
+    if (!files || files.length === 0) return
+
+    try {
+      if (files.length > 1 || (files[0].webkitRelativePath && files[0].webkitRelativePath.includes('/'))) {
+        setNotice('Packaging folder into ZIP archive...')
+        const zip = new JSZip()
+        for (let i = 0; i < files.length; i++) {
+          const file = files[i]
+          const relativePath = file.webkitRelativePath || file.name
+          zip.file(relativePath, file)
+        }
+        const zipBlob = await zip.generateAsync({ type: 'blob' })
+        const zipFile = new File([zipBlob], 'documents.zip', { type: 'application/zip' })
+
+        const data = new FormData()
+        data.append('file', zipFile)
+        setNotice('Uploading and generating 768-D dense embeddings...')
+        const response = await request('/upload', { method: 'POST', body: data })
+        await loadDocs()
+        setNotice(
+          `Bulk upload completed! Processed: ${response.total_processed} document(s)${
+            response.failed_count > 0 ? `, Failed: ${response.failed_count}` : ''
+          }`
+        )
+      } else {
+        const file = files[0]
+        const data = new FormData()
+        data.append('file', file)
+
+        const isZip = file.name.toLowerCase().endsWith('.zip')
+        setNotice(isZip ? 'Processing ZIP archives...' : 'Creating embeddings via Ollama nomic-embed-text...')
+        const response = await request('/upload', { method: 'POST', body: data })
+        await loadDocs()
+        setNotice(
+          isZip
+            ? `Bulk upload completed! Processed: ${response.total_processed} document(s)`
+            : 'Document successfully parsed, chunked, and vectorized!'
+        )
+      }
+    } catch (err) {
+      setNotice(err.message)
+    }
+    e.target.value = ''
+  }
+
+  const createChat = async () => {
+    try {
+      const c = await request('/chat/new', { method: 'POST' })
+      setChatId(c.chat_id)
+      setMessages([])
+      await loadChats()
+      setPage('chat')
+    } catch (e) {
+      setNotice(e.message)
+    }
+  }
+
+  const openChat = async (id) => {
+    setChatId(id)
+    setPage('chat')
+    try {
+      setMessages(await request(`/chat/${id}/history`))
+    } catch (e) {
+      setNotice(e.message)
+    }
+  }
+
+  const extractSourceDocument = (content) => {
+    if (!content) return ''
+    const match = content.match(/(?:^|\n)Source document:\s*(.+)$/i)
+    return match ? match[1].trim() : ''
+  }
+
+  const ask = async (e) => {
+    e.preventDefault()
+    if (!question.trim()) return
+    let id = chatId
+    if (!id) {
+      const c = await request('/chat/new', { method: 'POST' })
+      id = c.chat_id
+      setChatId(id)
+      await loadChats()
+    }
+    const text = question
+    setQuestion('')
+    setRetrievalTrace(null)
+    setSourceBadge('')
+    setMessages((m) => [...m, { role: 'user', content: text }, { role: 'assistant', content: '' }])
+
+    try {
+      const trace = await request('/retrieval/inspect', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question: text, document_id: selected?.id ?? null }),
+      })
+      setRetrievalTrace(trace)
+
+      const token = localStorage.getItem('rag_token')
+      const r = await fetch(`${API}/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ chat_id: id, message: text, document_id: selected?.id ?? null }),
+      })
+      if (!r.ok) throw new Error((await r.json().catch(() => ({}))).detail || 'Chat request failed')
+
+      const reader = r.body.getReader()
+      const decoder = new TextDecoder()
+      let answer = ''
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        answer += decoder.decode(value)
+        const extracted = extractSourceDocument(answer)
+        if (extracted) setSourceBadge(extracted)
+        setMessages((m) => [...m.slice(0, -1), { role: 'assistant', content: answer }])
+      }
+    } catch (err) {
+      setNotice(err.message)
+      setMessages((m) => m.slice(0, -1))
+    }
+  }
+
+  const title = nav.find((n) => n[0] === page)?.[1]
+
+  return (
+    <div
+      className={`min-h-screen lg:flex transition-colors duration-300 ${
+        isDark ? 'bg-[#030509] text-white' : 'bg-slate-50 text-slate-900'
+      }`}
+    >
+      {/* Sidebar */}
+      <aside
+        className={`w-full lg:w-72 lg:min-h-screen p-5 flex flex-col justify-between border-r transition-colors ${
+          isDark
+            ? 'bg-[#0a0f1d] border-slate-800/80 text-slate-300'
+            : 'bg-white border-slate-200 text-slate-700 shadow-sm'
+        }`}
+      >
+        <div>
+          {/* Logo */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-black">
+                ◈
+              </div>
+              <b className={`text-base font-bold tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                RAG STUDIO
+              </b>
+            </div>
+            <button
+              onClick={onHomeClick}
+              title="Return to Landing Page"
+              className={`p-1.5 rounded-lg border transition-colors ${
+                isDark
+                  ? 'border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800'
+                  : 'border-slate-200 text-slate-500 hover:text-indigo-600 hover:bg-slate-100'
+              }`}
+            >
+              <Home className="w-4 h-4" />
+            </button>
+          </div>
+
+          {/* Upload Dropzone */}
+          <label
+            className={`mt-6 block cursor-pointer rounded-2xl border-2 border-dashed p-4 text-center transition-all ${
+              isDark
+                ? 'border-slate-700 bg-slate-900/50 hover:border-indigo-500 hover:bg-indigo-500/5'
+                : 'border-slate-300 bg-slate-50 hover:border-indigo-600 hover:bg-indigo-50/50'
+            }`}
+          >
+            <input
+              className="hidden"
+              type="file"
+              onChange={upload}
+              multiple
+              webkitdirectory=""
+              accept=".pdf,.docx,.txt,.md,.json,.csv,.xlsx,.pptx,.html,.htm,.jpg,.jpeg,.png,.gif,.bmp,.tiff,.webp,.zip"
+            />
+            <div className="w-8 h-8 mx-auto rounded-lg bg-indigo-500/10 text-indigo-500 flex items-center justify-center mb-2">
+              <Upload className="w-4 h-4" />
+            </div>
+            <span className={`block font-semibold text-xs ${isDark ? 'text-white' : 'text-slate-900'}`}>
+              Upload Files or Folder
+            </span>
+            <span className="mt-1 block text-[10px] text-slate-400">Auto-zips directories</span>
+          </label>
+
+          {/* Nav Items */}
+          <div className="mt-6 space-y-1">
+            {nav.map(([id, text, Icon]) => {
+              const active = page === id
+              return (
+                <button
+                  key={id}
+                  onClick={() => setPage(id)}
+                  className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                    active
+                      ? 'bg-indigo-600 text-white shadow-sm'
+                      : isDark
+                      ? 'hover:bg-slate-800/80 text-slate-400 hover:text-white'
+                      : 'hover:bg-slate-100 text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  <Icon className={`w-4 h-4 ${active ? 'text-white' : 'text-slate-400'}`} />
+                  <span>{text}</span>
+                </button>
+              )
+            })}
+          </div>
+
+          {/* Chat History Section */}
+          <div className={`mt-8 pt-5 border-t ${isDark ? 'border-slate-800' : 'border-slate-200'}`}>
+            <div className="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
+              <span>Chat sessions</span>
+              <button
+                onClick={createChat}
+                title="New Chat"
+                className="w-5 h-5 rounded flex items-center justify-center hover:bg-indigo-600 hover:text-white transition-colors"
+              >
+                <Plus className="w-3.5 h-3.5" />
+              </button>
+            </div>
+            <div className="max-h-48 overflow-y-auto space-y-1">
+              {chats.length ? (
+                chats.map((c) => (
+                  <button
+                    key={c.chat_id}
+                    onClick={() => openChat(c.chat_id)}
+                    className={`w-full block truncate rounded-lg px-2.5 py-1.5 text-left text-xs transition-colors ${
+                      chatId === c.chat_id
+                        ? 'bg-indigo-500/20 text-indigo-400 font-semibold'
+                        : isDark
+                        ? 'hover:bg-slate-800 text-slate-400 hover:text-white'
+                        : 'hover:bg-slate-100 text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    Chat #{c.chat_id}
+                  </button>
+                ))
+              ) : (
+                <p className="text-xs text-slate-400 italic py-1">No chats yet</p>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Sidebar Footer with Sign Out */}
+        <div className={`pt-4 mt-6 border-t ${isDark ? 'border-slate-800' : 'border-slate-200'}`}>
+          <button
+            onClick={onLogoutClick}
+            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-rose-500 hover:bg-rose-500/10 transition-colors"
+          >
+            <LogOut className="w-4 h-4" />
+            <span>Sign out of Workspace</span>
+          </button>
+        </div>
+      </aside>
+
+      {/* Main Content Area */}
+      <main className="min-w-0 flex-1 p-5 sm:p-8 lg:p-10">
+        {/* Top Header */}
+        <header className="mb-8 flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-indigo-500">Knowledge Workspace</p>
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight mt-0.5">{title}</h1>
+          </div>
+
+          <div className="flex items-center gap-3">
+            {/* Global Document Selector */}
+            {documents.length > 0 && (
+              <select
+                value={selected?.id ?? 'all'}
+                onChange={(e) =>
+                  setSelected(e.target.value === 'all' ? null : documents.find((d) => d.id === +e.target.value))
+                }
+                className={`rounded-xl border px-3 py-2 text-xs font-medium outline-none transition-all ${
+                  isDark
+                    ? 'bg-slate-900 border-slate-700 text-white focus:border-indigo-500'
+                    : 'bg-white border-slate-300 text-slate-800 focus:border-indigo-600'
+                }`}
+              >
+                <option value="all">All uploaded documents ({documents.length})</option>
+                {documents.map((d) => (
+                  <option key={d.id} value={d.id}>
+                    {d.source_path || d.title}
+                  </option>
+                ))}
+              </select>
+            )}
+
+            {/* Theme Toggle */}
+            <ThemeToggle theme={theme} toggleTheme={toggleTheme} />
+
+            {/* Top Bar Sign Out Button placed at the very end */}
+            <button
+              onClick={onLogoutClick}
+              title="Sign out"
+              className={`p-2 rounded-xl border transition-colors ${
+                isDark
+                  ? 'border-slate-700 text-slate-300 hover:text-rose-400 hover:border-rose-500/30 hover:bg-rose-500/10'
+                  : 'border-slate-300 text-slate-700 hover:text-rose-600 hover:border-rose-300 hover:bg-rose-50'
+              }`}
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
+          </div>
+        </header>
+
+        {/* Global Notification Banner */}
+        {notice && (
+          <div
+            className={`mb-6 p-4 rounded-2xl border text-sm flex items-center justify-between gap-3 ${
+              notice.includes('failed') || notice.includes('Failed')
+                ? 'bg-rose-500/10 border-rose-500/20 text-rose-400'
+                : 'bg-indigo-500/10 border-indigo-500/20 text-indigo-400'
+            }`}
+          >
+            <span>{notice}</span>
+            <button onClick={() => setNotice('')} className="text-xs font-bold hover:underline">
+              Dismiss
+            </button>
+          </div>
+        )}
+
+        {/* Subpages */}
+        <Page
+          page={page}
+          docs={documents}
+          doc={selected}
+          detail={detail}
+          messages={messages}
+          question={question}
+          setQuestion={setQuestion}
+          ask={ask}
+          sourceBadge={sourceBadge}
+          theme={theme}
+        />
+      </main>
+    </div>
+  )
 }
-function Metric({ label, value, suffix = '' }) { return <div className="rounded-2xl bg-white p-5 shadow-sm"><p className="text-sm text-slate-500">{label}</p><p className="mt-2 text-3xl font-bold">{value}{suffix}</p></div> }
-function RemoveDocument({ docs, selectedDocument }) {
-  const [documentId, setDocumentId] = useState(selectedDocument?.id || '')
+
+function Page({ page, docs, doc, detail, messages, question, setQuestion, ask, sourceBadge, theme }) {
+  const isDark = theme === 'dark'
+
+  if (page === 'remove') return <RemoveDocument docs={docs} selectedDocument={doc} theme={theme} />
+  if (page === 'overview') {
+    return (
+      <div>
+        <div className="grid gap-4 sm:grid-cols-3">
+          <Metric
+            label="Total Documents"
+            value={docs.length}
+            theme={theme}
+            icon={<FileText className="w-5 h-5 text-indigo-400" />}
+          />
+          <Metric
+            label="Vectorized Chunks"
+            value={docs.reduce((n, d) => n + d.chunk_count, 0)}
+            theme={theme}
+            icon={<Layers className="w-5 h-5 text-sky-400" />}
+          />
+          <Metric
+            label="Selected Document Chunks"
+            value={doc?.chunk_count || '—'}
+            suffix=" chunks"
+            theme={theme}
+            icon={<Cpu className="w-5 h-5 text-emerald-400" />}
+          />
+        </div>
+
+        <section
+          className={`mt-8 rounded-3xl border p-6 sm:p-8 transition-colors ${
+            isDark ? 'bg-slate-900/60 border-slate-800' : 'bg-white border-slate-200 shadow-sm'
+          }`}
+        >
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-bold text-lg">Your Ingested Documents</h2>
+            <span className="text-xs text-slate-400 font-mono">{docs.length} files indexed</span>
+          </div>
+
+          {docs.length ? (
+            <div className="space-y-3">
+              {docs.map((d) => (
+                <div
+                  key={d.id}
+                  className={`flex items-center justify-between rounded-2xl p-4 text-sm border transition-all ${
+                    isDark ? 'bg-slate-950/80 border-slate-800' : 'bg-slate-50 border-slate-200'
+                  }`}
+                >
+                  <div className="min-w-0 pr-4">
+                    <p className="truncate font-semibold">{d.source_path || d.title}</p>
+                    <p className="mt-0.5 text-xs text-slate-400">{d.chunk_count} dense 768-D chunks</p>
+                  </div>
+                  <span className="shrink-0 rounded-full bg-indigo-500/10 border border-indigo-500/20 px-3 py-1 text-xs font-semibold text-indigo-400">
+                    {d.source_path ? 'Folder Batch' : 'Single File'}
+                  </span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-slate-400 py-4">
+              Upload a document using the left sidebar dropzone to start the ingestion and embedding pipeline.
+            </p>
+          )}
+        </section>
+      </div>
+    )
+  }
+
+  if (page === 'pipeline') return <Pipeline docs={docs} selectedDoc={doc} theme={theme} />
+  if (page === 'chat') {
+    return (
+      <ChatPanel
+        doc={doc}
+        messages={messages}
+        question={question}
+        setQuestion={setQuestion}
+        ask={ask}
+        sourceBadge={sourceBadge}
+        theme={theme}
+      />
+    )
+  }
+
+  const heading =
+    page === 'chunks'
+      ? 'First 10 Chunks'
+      : page === 'embeddings'
+      ? 'Embedding Preview — First 5 Chunks'
+      : 'Document Metadata & Synthesis'
+
+  return (
+    <section>
+      <p className="mb-4 text-xs font-semibold uppercase tracking-wider text-slate-400">{heading}</p>
+      {doc ? (
+        <div className="space-y-4">
+          {detail.map((item, i) => (
+            <article
+              key={item.id || i}
+              className={`rounded-2xl border p-5 sm:p-6 shadow-sm transition-colors ${
+                isDark ? 'bg-slate-900/70 border-slate-800' : 'bg-white border-slate-200'
+              }`}
+            >
+              <div className="mb-3 flex items-center justify-between">
+                <b className="text-sm font-bold">{page === 'metadata' ? item.title : `Chunk ${item.chunk_index + 1}`}</b>
+                {item.embedding_dimensions && (
+                  <span className="text-xs font-mono text-indigo-400 bg-indigo-500/10 px-2.5 py-0.5 rounded-full">
+                    {item.embedding_dimensions} dimensions
+                  </span>
+                )}
+              </div>
+
+              {page === 'metadata' ? (
+                <>
+                  <p className="text-xs text-slate-400">
+                    Source: {item.source_path || item.source || 'Unknown'} ·{' '}
+                    {item.created_at ? new Date(item.created_at).toLocaleString() : ''}
+                  </p>
+                  {item.index_markdown && (
+                    <pre className="mt-4 overflow-auto rounded-xl bg-slate-950 p-4 text-xs leading-6 text-slate-200 whitespace-pre-wrap font-mono border border-slate-800">
+                      {item.index_markdown}
+                    </pre>
+                  )}
+                  {item.key_points && (
+                    <ul className="mt-4 list-disc space-y-2 pl-5 text-sm">
+                      {item.key_points.map((x, j) => (
+                        <li key={j}>{x}</li>
+                      ))}
+                    </ul>
+                  )}
+                </>
+              ) : (
+                <>
+                  <p className="whitespace-pre-wrap text-sm leading-6 opacity-90">{item.content}</p>
+                  {item.embedding_preview && (
+                    <code className="mt-4 block overflow-auto rounded-xl bg-slate-950 p-3 text-xs text-emerald-400 font-mono border border-slate-800">
+                      [{item.embedding_preview.map((n) => n.toFixed(4)).join(', ')}, …]
+                    </code>
+                  )}
+                </>
+              )}
+            </article>
+          ))}
+        </div>
+      ) : (
+        <div
+          className={`p-8 rounded-2xl border text-center ${
+            isDark ? 'bg-slate-900/40 border-slate-800 text-slate-400' : 'bg-white border-slate-200 text-slate-500'
+          }`}
+        >
+          Select a specific document from the top-right header selector to view its detailed chunks and embeddings.
+        </div>
+      )}
+    </section>
+  )
+}
+
+function Metric({ label, value, suffix = '', icon, theme }) {
+  const isDark = theme === 'dark'
+  return (
+    <div
+      className={`rounded-2xl border p-5 transition-colors ${
+        isDark ? 'bg-slate-900/60 border-slate-800' : 'bg-white border-slate-200 shadow-sm'
+      }`}
+    >
+      <div className="flex items-center justify-between">
+        <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">{label}</p>
+        {icon}
+      </div>
+      <p className="mt-2 text-3xl font-extrabold tracking-tight">
+        {value}
+        <span className="text-sm font-normal text-slate-400 ml-1">{suffix}</span>
+      </p>
+    </div>
+  )
+}
+
+function RemoveDocument({ docs, selectedDocument, theme }) {
+  const isDark = theme === 'dark'
+  const [documentId, setDocumentId] = useState(selectedDocument?.id || (docs[0]?.id ?? ''))
   const [error, setError] = useState('')
+
   const remove = async () => {
-    const document = docs.find(item => item.id === Number(documentId))
+    const document = docs.find((item) => item.id === Number(documentId))
     if (!document) return
-    if (!window.confirm(`Delete “${document.title}” and all of its chunks? This cannot be undone.`)) return
+    if (!window.confirm(`Permanently delete "${document.title}" and its vectorized embeddings from PostgreSQL?`)) return
     try {
       await request(`/documents/${document.id}`, { method: 'DELETE' })
       window.location.reload()
@@ -101,35 +707,435 @@ function RemoveDocument({ docs, selectedDocument }) {
       setError(err.message)
     }
   }
-  if (!docs.length) return <section className="rounded-2xl bg-white p-6 shadow-sm"><h2 className="font-bold">Remove document</h2><p className="mt-3 text-sm text-slate-500">There are no documents to remove.</p></section>
-  return <section className="max-w-xl rounded-2xl bg-white p-6 shadow-sm"><h2 className="font-bold">Remove document</h2><p className="mt-2 text-sm text-slate-500">Deleting a document permanently removes its chunks and embeddings from the database.</p><label className="mt-5 block text-sm font-medium">Document<select value={documentId} onChange={event => setDocumentId(event.target.value)} className="mt-2 w-full rounded-lg border bg-white p-3">{docs.map(document => <option key={document.id} value={document.id}>{document.title}</option>)}</select></label>{error && <p className="mt-3 text-sm text-rose-600">{error}</p>}<button onClick={remove} className="mt-5 rounded-lg bg-rose-600 px-4 py-3 text-sm font-semibold text-white hover:bg-rose-700">Delete document</button></section>
+
+  return (
+    <section
+      className={`max-w-xl rounded-3xl border p-6 sm:p-8 transition-colors ${
+        isDark ? 'bg-slate-900/70 border-slate-800' : 'bg-white border-slate-200 shadow-sm'
+      }`}
+    >
+      <h2 className="font-bold text-xl text-rose-500 flex items-center gap-2">
+        <Trash2 className="w-5 h-5" />
+        Remove Document
+      </h2>
+      <p className="mt-2 text-sm text-slate-400">
+        Deleting a document permanently removes all chunk records, metadata, and 768-D embeddings from the database.
+      </p>
+
+      {docs.length ? (
+        <>
+          <label className="mt-6 block text-xs font-semibold uppercase tracking-wider text-slate-400">
+            Select Document to Delete
+            <select
+              value={documentId}
+              onChange={(e) => setDocumentId(e.target.value)}
+              className={`mt-2 w-full rounded-xl border p-3 text-sm outline-none ${
+                isDark ? 'bg-slate-950 border-slate-700 text-white' : 'bg-slate-50 border-slate-300'
+              }`}
+            >
+              {docs.map((d) => (
+                <option key={d.id} value={d.id}>
+                  {d.source_path || d.title}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          {error && <p className="mt-3 text-sm text-rose-500">{error}</p>}
+
+          <button
+            onClick={remove}
+            className="mt-6 rounded-xl bg-rose-600 px-5 py-3 text-sm font-semibold text-white hover:bg-rose-500 shadow-md shadow-rose-600/30 transition-all cursor-pointer"
+          >
+            Permanently Delete Document
+          </button>
+        </>
+      ) : (
+        <p className="mt-6 text-sm text-slate-400">No documents are currently ingested.</p>
+      )}
+    </section>
+  )
 }
-function ChatPanel({ doc, messages, question, setQuestion, ask }) {
+
+function ChatPanel({ doc, messages, question, setQuestion, ask, sourceBadge, theme }) {
+  const isDark = theme === 'dark'
+
   const clearHistory = async () => {
-    if (!window.confirm('Delete every saved chat?')) return
-    try { await request('/chats', { method: 'DELETE' }); window.location.reload() } catch (error) { window.alert(error.message) }
+    if (!window.confirm('Delete every saved chat conversation?')) return
+    try {
+      await request('/chats', { method: 'DELETE' })
+      window.location.reload()
+    } catch (error) {
+      window.alert(error.message)
+    }
   }
-  return <section className="flex min-h-[65vh] flex-col rounded-2xl bg-white shadow-sm"><div className="flex items-start justify-between border-b p-5"><div><b>Document agent</b><p className="text-sm text-slate-500">Answering only from: {doc?.title || 'select a document first'}.</p></div><button onClick={clearHistory} className="rounded-lg border border-rose-200 px-3 py-2 text-xs font-semibold text-rose-700">Clear chat history</button></div><div className="flex-1 space-y-4 p-5">{messages.length ? messages.map((m, i) => <div key={i} className={`max-w-3xl whitespace-pre-wrap rounded-2xl p-4 text-sm leading-6 ${m.role === 'user' ? 'ml-auto bg-indigo-600 text-white' : 'bg-slate-100'}`}>{m.content || 'Thinking...'}</div>) : <p className="text-sm text-slate-500">Use Retrieval flow to inspect each chunk selected as evidence.</p>}</div><form onSubmit={ask} className="flex gap-3 border-t p-4"><input value={question} onChange={e => setQuestion(e.target.value)} placeholder="Ask the selected document..." className="min-w-0 flex-1 rounded-xl border p-3 outline-none focus:border-indigo-500"/><button className="rounded-xl bg-indigo-600 px-5 font-semibold text-white">Send</button></form></section>
+
+  const currentSource = sourceBadge || (doc ? doc.source_path || doc.title : 'all uploaded documents')
+
+  return (
+    <section
+      className={`flex min-h-[70vh] flex-col rounded-3xl border overflow-hidden transition-colors ${
+        isDark ? 'bg-slate-900/70 border-slate-800' : 'bg-white border-slate-200 shadow-sm'
+      }`}
+    >
+      {/* Chat Header */}
+      <div className={`flex items-center justify-between border-b p-5 ${isDark ? 'border-slate-800' : 'border-slate-200'}`}>
+        <div>
+          <b className="text-sm sm:text-base font-bold">RAG Document Agent</b>
+          <div className="mt-1 inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-400">
+            <span className="inline-block h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+            Active Retrieval Scope: <span className="truncate max-w-[240px] font-semibold">{currentSource}</span>
+          </div>
+        </div>
+        <button
+          onClick={clearHistory}
+          className="rounded-xl border border-rose-500/20 px-3 py-1.5 text-xs font-semibold text-rose-500 hover:bg-rose-500/10 transition-colors"
+        >
+          Clear History
+        </button>
+      </div>
+
+      {/* Message List */}
+      <div className="flex-1 space-y-4 p-5 sm:p-6 overflow-y-auto max-h-[55vh]">
+        {messages.length ? (
+          messages.map((m, i) => (
+            <div
+              key={i}
+              className={`max-w-3xl whitespace-pre-wrap rounded-2xl p-4 text-sm leading-relaxed ${
+                m.role === 'user'
+                  ? 'ml-auto bg-indigo-600 text-white shadow-md'
+                  : isDark
+                  ? 'bg-slate-950 border border-slate-800 text-slate-100'
+                  : 'bg-slate-100 text-slate-800'
+              }`}
+            >
+              {m.content || 'Generating fact-checked response from Ollama...'}
+            </div>
+          ))
+        ) : (
+          <div className="py-12 text-center text-slate-400 text-sm">
+            <MessageSquare className="w-8 h-8 mx-auto mb-2 text-indigo-400/40" />
+            Ask any question across your uploaded documents. Retrieved chunks are verified before answering.
+          </div>
+        )}
+      </div>
+
+      {/* Chat Input */}
+      <form onSubmit={ask} className={`flex gap-3 border-t p-4 sm:p-5 ${isDark ? 'border-slate-800' : 'border-slate-200'}`}>
+        <input
+          value={question}
+          onChange={(e) => setQuestion(e.target.value)}
+          placeholder={doc ? `Ask about "${doc.title}"...` : 'Ask across all uploaded documents...'}
+          className={`min-w-0 flex-1 rounded-2xl border px-4 py-3.5 text-sm outline-none transition-all ${
+            isDark
+              ? 'bg-slate-950 border-slate-700 text-white focus:border-indigo-500'
+              : 'bg-slate-50 border-slate-300 text-slate-900 focus:border-indigo-600 focus:bg-white'
+          }`}
+        />
+        <button className="rounded-2xl bg-indigo-600 px-6 font-semibold text-sm text-white hover:bg-indigo-500 shadow-md shadow-indigo-600/30 transition-all cursor-pointer">
+          Send
+        </button>
+      </form>
+    </section>
+  )
 }
-function Pipeline({ documentId }) {
+
+function Pipeline({ docs, selectedDoc, theme }) {
   const steps = [
-    ['Query rewriting', 'Makes a follow-up question self-contained using prior messages, so retrieval understands words such as “it” or “that”.'],
-    ['Vector search', 'Embeds the question and returns the ten closest chunks owned by the signed-in user.'],
-    ['Reranker', 'A CrossEncoder reads the question together with each candidate chunk, then orders the five most relevant chunks. If that model is unavailable, the app safely retains vector-search order and clearly reports it.'],
-    ['Relevance check', 'Checks the strongest score before giving any text to the model. This prevents an unrelated document from being used as evidence.'],
-    ['Context writing', 'Joins the approved chunk text with separators. That is the exact evidence supplied to the answering model.'],
-    ['Answer + memory', 'The answer is streamed to chat and both messages are saved for later follow-up questions.'],
+    ['Query rewriting', 'Makes follow-up questions self-contained using prior messages so retrieval resolves "it" or "that".'],
+    ['Vector search', 'Embeds the question with nomic-embed-text and queries the ten closest chunks via pgvector cosine distance.'],
+    ['Reranker', 'CrossEncoder scores the query pairwise with candidates to yield the five most relevant chunks.'],
+    ['Relevance check', 'Verifies the top similarity score exceeds the threshold before injecting any text into the LLM context.'],
+    ['Context writing', 'Joins the approved chunk text with separators as the exact factual evidence for Llama 3.2.'],
+    ['Answer + memory', 'Streams the answer to chat and saves both messages for conversational memory.'],
   ]
-  const [selectedStep, setSelectedStep] = useState(2), [query, setQuery] = useState(''), [trace, setTrace] = useState(null), [error, setError] = useState(''), [loading, setLoading] = useState(false), [chats, setChats] = useState([]), [chatId, setChatId] = useState('')
-  useEffect(() => { request('/chats').then(setChats).catch(() => {}) }, [])
-  const inspect = async e => { e.preventDefault(); if (!query.trim()) return; if (!documentId) { setError('Select a document before running retrieval.'); return } setLoading(true); setError(''); try { setTrace(await request('/retrieval/inspect', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ question: query, document_id: documentId, ...(chatId ? { chat_id: Number(chatId) } : {}) }) })) } catch (err) { setError(err.message) } finally { setLoading(false) } }
+
+  const [selectedStep, setSelectedStep] = useState(2)
+  const [query, setQuery] = useState('')
+  const [trace, setTrace] = useState(null)
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [chats, setChats] = useState([])
+  const [chatId, setChatId] = useState('')
+  const [localDocId, setLocalDocId] = useState(selectedDoc?.id ?? (docs?.[0]?.id ?? null))
+
+  useEffect(() => {
+    request('/chats').then(setChats).catch(() => {})
+  }, [])
+
+  useEffect(() => {
+    if (selectedDoc?.id) setLocalDocId(selectedDoc.id)
+  }, [selectedDoc])
+
+  const inspect = async (e) => {
+    e.preventDefault()
+    if (!query.trim()) return
+    setLoading(true)
+    setError('')
+    try {
+      setTrace(
+        await request('/retrieval/inspect', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            question: query,
+            document_id: localDocId || null,
+            ...(chatId ? { chat_id: Number(chatId) } : {}),
+          }),
+        })
+      )
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const active = steps[selectedStep]
-  return <PipelineInspector steps={steps} selectedStep={selectedStep} setSelectedStep={setSelectedStep} active={active} query={query} setQuery={setQuery} inspect={inspect} documentId={documentId} loading={loading} error={error} trace={trace} chats={chats} chatId={chatId} setChatId={setChatId} />
-  return <div className="space-y-6"><section className="rounded-2xl bg-white p-6 shadow-sm"><p className="text-sm text-slate-500">Click a stage to understand what it does. Use the checker to run the same retrieval path as chat before asking.</p><div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{steps.map(([title], i) => <button key={title} onClick={() => setSelectedStep(i)} className={`rounded-xl border p-4 text-left ${selectedStep === i ? 'border-indigo-500 bg-indigo-50' : 'border-slate-200 hover:border-indigo-300'}`}><span className="text-xs font-bold text-indigo-600">STEP {i + 1}</span><b className="mt-1 block">{title}</b></button>)}</div><article className="mt-5 rounded-xl bg-slate-950 p-5 text-white"><p className="text-xs font-bold text-indigo-300">{active[0].toUpperCase()}</p><p className="mt-2 text-sm leading-6 text-slate-200">{active[1]}</p></article></section><section className="rounded-2xl bg-white p-6 shadow-sm"><h2 className="font-bold">Check your document retrieval</h2><form onSubmit={inspect} className="mt-4 flex gap-3"><input value={query} onChange={e => setQuery(e.target.value)} placeholder="Type a question about an uploaded document" className="min-w-0 flex-1 rounded-xl border p-3 outline-none focus:border-indigo-500"/><button disabled={loading} className="rounded-xl bg-indigo-600 px-5 text-sm font-semibold text-white disabled:opacity-60">{loading ? 'Checking…' : 'Run check'}</button></form>{error && <p className="mt-3 text-sm text-rose-600">{error}</p>}{trace && <div className="mt-5 space-y-4 text-sm"><p className={`rounded-lg p-3 ${trace.relevant ? 'bg-emerald-50 text-emerald-800' : 'bg-amber-50 text-amber-800'}`}>{trace.reason}</p>{trace.reranker_warning && <p className="rounded-lg bg-amber-50 p-3 text-amber-800">{trace.reranker_warning}</p>}<TraceList title="Vector search candidates" rows={trace.vector_candidates} scoreLabel="similarity"/><TraceList title={trace.used_reranker ? 'Reranked chunks' : 'Selected chunks (vector fallback)'} rows={trace.reranked_chunks} scoreLabel="score"/></div>}</section></div>
+  return (
+    <PipelineInspector
+      steps={steps}
+      selectedStep={selectedStep}
+      setSelectedStep={setSelectedStep}
+      active={active}
+      query={query}
+      setQuery={setQuery}
+      inspect={inspect}
+      docs={docs}
+      localDocId={localDocId}
+      setLocalDocId={setLocalDocId}
+      loading={loading}
+      error={error}
+      trace={trace}
+      chats={chats}
+      chatId={chatId}
+      setChatId={setChatId}
+      theme={theme}
+    />
+  )
 }
-function PipelineInspector({ steps, selectedStep, setSelectedStep, active, query, setQuery, inspect, documentId, loading, error, trace, chats, chatId, setChatId }) {
-  return <div className="space-y-6"><section className="rounded-2xl bg-white p-6 shadow-sm"><p className="text-sm text-slate-500">Run the same retrieval stages used by chat and inspect the inputs and resulting context.</p><div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{steps.map(([title], index) => <button key={title} onClick={() => setSelectedStep(index)} className={`rounded-xl border p-4 text-left ${selectedStep === index ? 'border-indigo-500 bg-indigo-50' : 'border-slate-200 hover:border-indigo-300'}`}><span className="text-xs font-bold text-indigo-600">STEP {index + 1}</span><b className="mt-1 block">{title}</b></button>)}</div><article className="mt-5 rounded-xl bg-slate-950 p-5 text-white"><p className="text-xs font-bold text-indigo-300">{active[0].toUpperCase()}</p><p className="mt-2 text-sm leading-6 text-slate-200">{active[1]}</p></article></section><section className="rounded-2xl bg-white p-6 shadow-sm"><h2 className="font-bold">Check your document retrieval</h2><form onSubmit={inspect} className="mt-4 space-y-3"><input value={query} onChange={event => setQuery(event.target.value)} placeholder="Type a question about an uploaded document" className="w-full rounded-xl border p-3 outline-none focus:border-indigo-500"/><label className="block text-sm text-slate-600">Chat history for query rewriting (optional)<select value={chatId} onChange={event => setChatId(event.target.value)} className="mt-1 block w-full rounded-lg border bg-white p-3"><option value="">No prior chat — query stays standalone</option>{chats.map(chat => <option key={chat.chat_id} value={chat.chat_id}>Chat #{chat.chat_id}</option>)}</select></label><button disabled={loading || !documentId} className="rounded-xl bg-indigo-600 px-5 py-3 text-sm font-semibold text-white disabled:opacity-60">{loading ? 'Checking…' : 'Run check'}</button></form>{error && <p className="mt-3 text-sm text-rose-600">{error}</p>}{trace && <div className="mt-5 space-y-4 text-sm"><p className={`rounded-lg p-3 ${trace.relevant ? 'bg-emerald-50 text-emerald-800' : 'bg-amber-50 text-amber-800'}`}>{trace.reason}</p><TraceOutput label="Original query" value={trace.original_query}/><TraceOutput label="Rewritten query used for retrieval" value={trace.rewritten_query}/><TraceOutput label={`Final context sent to the model (${trace.context_chunk_count || 0} chunks)`} value={trace.context_text} empty="No context was sent because no chunk passed the relevance check."/>{trace.reranker_warning && <p className="rounded-lg bg-amber-50 p-3 text-amber-800">{trace.reranker_warning}</p>}<TraceList title="Vector search candidates" rows={trace.vector_candidates} scoreLabel="similarity"/><TraceList title={trace.used_reranker ? 'Reranked chunks' : 'Selected chunks (vector fallback)'} rows={trace.reranked_chunks} scoreLabel="score"/></div>}</section></div>
+
+function PipelineInspector({
+  steps,
+  selectedStep,
+  setSelectedStep,
+  active,
+  query,
+  setQuery,
+  inspect,
+  docs,
+  localDocId,
+  setLocalDocId,
+  loading,
+  error,
+  trace,
+  chats,
+  chatId,
+  setChatId,
+  theme,
+}) {
+  const isDark = theme === 'dark'
+
+  return (
+    <div className="space-y-6">
+      <section
+        className={`rounded-3xl border p-6 sm:p-8 transition-colors ${
+          isDark ? 'bg-slate-900/70 border-slate-800' : 'bg-white border-slate-200 shadow-sm'
+        }`}
+      >
+        <p className="text-xs font-semibold uppercase tracking-wider text-indigo-500 mb-2">Stage Diagnostics</p>
+        <h2 className="text-xl font-bold mb-4">Interactive Retrieval Pipeline Architecture</h2>
+
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {steps.map(([title], index) => (
+            <button
+              key={title}
+              onClick={() => setSelectedStep(index)}
+              className={`rounded-2xl border p-4 text-left transition-all ${
+                selectedStep === index
+                  ? 'border-indigo-500 bg-indigo-500/10 shadow-sm'
+                  : isDark
+                  ? 'border-slate-800 bg-slate-950/60 hover:border-slate-700'
+                  : 'border-slate-200 bg-slate-50 hover:border-indigo-300'
+              }`}
+            >
+              <span className="text-xs font-mono font-bold text-indigo-400">STEP {index + 1}</span>
+              <b className="mt-1 block text-sm">{title}</b>
+            </button>
+          ))}
+        </div>
+
+        <article className="mt-6 rounded-2xl bg-slate-950 p-5 text-white border border-slate-800">
+          <p className="text-xs font-mono font-bold text-indigo-400 uppercase tracking-widest">{active[0]}</p>
+          <p className="mt-2 text-sm leading-relaxed text-slate-300">{active[1]}</p>
+        </article>
+      </section>
+
+      {/* Check Document Retrieval Form */}
+      <section
+        className={`rounded-3xl border p-6 sm:p-8 transition-colors ${
+          isDark ? 'bg-slate-900/70 border-slate-800' : 'bg-white border-slate-200 shadow-sm'
+        }`}
+      >
+        <h2 className="font-bold text-xl mb-1">Check Your Document Retrieval</h2>
+        <p className="text-xs text-slate-400 mb-6">
+          Inspect candidate vectors, similarity scores, and reranked context before triggering LLM generation.
+        </p>
+
+        <form onSubmit={inspect} className="space-y-4">
+          <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400">
+            Document Target (optional)
+            <select
+              value={localDocId ?? ''}
+              onChange={(e) => setLocalDocId(e.target.value ? Number(e.target.value) : null)}
+              className={`mt-1.5 block w-full rounded-xl border p-3 text-sm outline-none ${
+                isDark ? 'bg-slate-950 border-slate-700 text-white' : 'bg-slate-50 border-slate-300'
+              }`}
+            >
+              <option value="">Search across all uploaded documents</option>
+              {docs?.map((d) => (
+                <option key={d.id} value={d.id}>
+                  {d.source_path || d.title}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <div>
+            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
+              Question to Probe
+            </label>
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Type a question to trace chunk retrieval..."
+              className={`w-full rounded-xl border p-3.5 text-sm outline-none ${
+                isDark
+                  ? 'bg-slate-950 border-slate-700 text-white focus:border-indigo-500'
+                  : 'bg-slate-50 border-slate-300 text-slate-900 focus:border-indigo-600'
+              }`}
+            />
+          </div>
+
+          <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400">
+            Chat History Context for Rewriting (optional)
+            <select
+              value={chatId}
+              onChange={(e) => setChatId(e.target.value)}
+              className={`mt-1.5 block w-full rounded-xl border p-3 text-sm outline-none ${
+                isDark ? 'bg-slate-950 border-slate-700 text-white' : 'bg-slate-50 border-slate-300'
+              }`}
+            >
+              <option value="">No prior chat — standalone evaluation</option>
+              {chats.map((chat) => (
+                <option key={chat.chat_id} value={chat.chat_id}>
+                  Chat #{chat.chat_id}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <button
+            type="submit"
+            disabled={loading || !query.trim()}
+            className="rounded-xl bg-indigo-600 px-6 py-3.5 text-sm font-semibold text-white hover:bg-indigo-500 shadow-md shadow-indigo-600/30 transition-all disabled:opacity-60 cursor-pointer disabled:cursor-not-allowed"
+          >
+            {loading ? 'Checking Pipeline...' : 'Run Check'}
+          </button>
+        </form>
+
+        {error && <p className="mt-4 text-sm text-rose-500">{error}</p>}
+
+        {trace && (
+          <div className="mt-8 space-y-4 text-sm border-t pt-6 border-slate-800">
+            <p
+              className={`rounded-2xl p-4 font-medium border ${
+                trace.relevant
+                  ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                  : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+              }`}
+            >
+              {trace.reason}
+            </p>
+            <TraceOutput label="Original Question" value={trace.original_query} isDark={isDark} />
+            <TraceOutput label="Rewritten Standalone Query" value={trace.rewritten_query} isDark={isDark} />
+            <TraceOutput
+              label={`Final Fact Context (${trace.context_chunk_count || 0} chunks passed)`}
+              value={trace.context_text}
+              empty="No context was passed because candidate chunks did not satisfy relevance thresholds."
+              isDark={isDark}
+            />
+            {trace.reranker_warning && (
+              <p className="rounded-xl bg-amber-500/10 border border-amber-500/20 p-3 text-amber-400 text-xs">
+                {trace.reranker_warning}
+              </p>
+            )}
+            <TraceList
+              title="Vector Search Candidates (Cosine Distance)"
+              rows={trace.vector_candidates}
+              scoreLabel="similarity"
+              isDark={isDark}
+            />
+            <TraceList
+              title={trace.used_reranker ? 'CrossEncoder Reranked Chunks' : 'Selected Chunks (Vector Fallback)'}
+              rows={trace.reranked_chunks}
+              scoreLabel="score"
+              isDark={isDark}
+            />
+          </div>
+        )}
+      </section>
+    </div>
+  )
 }
-function TraceOutput({ label, value, empty = 'No value was returned.' }) { return <details className="rounded-xl border border-slate-200 bg-slate-50 p-4" open><summary className="cursor-pointer font-semibold text-slate-800">{label}</summary><pre className="mt-3 max-h-80 overflow-auto whitespace-pre-wrap font-sans text-xs leading-5 text-slate-700">{value || empty}</pre></details> }
-function TraceList({ title, rows = [], scoreLabel }) { return <div><b>{title}</b>{rows.length ? <div className="mt-2 space-y-2">{rows.map(row => <details key={row.chunk_id} className="rounded-lg bg-slate-50 p-3"><summary className="cursor-pointer"><span className="font-semibold">Chunk {row.chunk_index + 1}</span><span className="ml-2 text-xs text-indigo-600">{scoreLabel}: {row[scoreLabel]}</span></summary><p className="mt-2 text-xs font-medium text-slate-500">{row.document_title} (document #{row.document_id})</p><p className="mt-2 whitespace-pre-wrap text-xs leading-5 text-slate-600">{row.content || row.preview}</p></details>)}</div> : <p className="mt-2 text-slate-500">No chunks were returned.</p>}</div> }
-export default function App() { const [screen, setScreen] = useState(localStorage.getItem('rag_token') ? 'app' : 'landing'); return screen === 'landing' ? <Landing enter={() => setScreen('auth')}/> : screen === 'auth' ? <Auth onDone={() => setScreen('app')}/> : <Dashboard onLogout={() => setScreen('auth')}/> }
+
+function TraceOutput({ label, value, empty = 'No value returned.', isDark }) {
+  return (
+    <details
+      className={`rounded-2xl border p-4 transition-colors ${
+        isDark ? 'border-slate-800 bg-slate-950/60' : 'border-slate-200 bg-slate-50'
+      }`}
+      open
+    >
+      <summary className="cursor-pointer font-bold text-xs uppercase tracking-wider text-indigo-400">{label}</summary>
+      <pre className="mt-3 max-h-80 overflow-auto whitespace-pre-wrap font-mono text-xs leading-relaxed opacity-90">
+        {value || empty}
+      </pre>
+    </details>
+  )
+}
+
+function TraceList({ title, rows = [], scoreLabel, isDark }) {
+  return (
+    <div className="pt-2">
+      <b className="text-xs font-semibold uppercase tracking-wider text-slate-400">{title}</b>
+      {rows.length ? (
+        <div className="mt-2.5 space-y-2">
+          {rows.map((row) => (
+            <details
+              key={row.chunk_id}
+              className={`rounded-xl border p-3 text-xs ${
+                isDark ? 'border-slate-800 bg-slate-950/80' : 'border-slate-200 bg-slate-50'
+              }`}
+            >
+              <summary className="cursor-pointer flex items-center justify-between font-semibold">
+                <span>Chunk {row.chunk_index + 1}</span>
+                <span className="font-mono text-indigo-400">
+                  {scoreLabel}: {row[scoreLabel]}
+                </span>
+              </summary>
+              <p className="mt-2 font-medium text-slate-400">
+                {row.document_title} (document #{row.document_id})
+              </p>
+              <p className="mt-2 whitespace-pre-wrap font-mono text-[11px] leading-relaxed opacity-80">
+                {row.content || row.preview}
+              </p>
+            </details>
+          ))}
+        </div>
+      ) : (
+        <p className="mt-2 text-xs text-slate-400 italic">No chunks returned for this filter.</p>
+      )}
+    </div>
+  )
+}

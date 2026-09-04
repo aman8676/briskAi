@@ -16,6 +16,7 @@ __pycache__/
 # Node.js dependencies
 # =========================
 node_modules/
+frontend/dist/
 
 # =========================
 # Environment variables
@@ -27,6 +28,7 @@ node_modules/
 # RAG documents
 # =========================
 Rag_doc/
+backend/uploads/
 
 # =========================
 # Logs
@@ -37,7 +39,16 @@ Rag_doc/
 # Generated batch files
 # =========================
 batch_results.json
+batch_results.jsonl
 batch_failures.log
+
+# =========================
+# Local databases and indexes
+# =========================
+*.db
+*.sqlite
+*.sqlite3
+**/indexes/
 
 # =========================
 # Test / coverage
@@ -51,3 +62,4 @@ htmlcov/
 # =========================
 .vscode/
 .idea/
+

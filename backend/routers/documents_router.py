@@ -37,6 +37,7 @@ def list_documents(current_user: User = Depends(get_current_user), db: Session =
             "id": document.id,
             "title": document.title,
             "source": document.source,
+            "source_path": document.source_path or document.source,
             "created_at": document.created_at,
             "chunk_count": len(document.chunks),
         }
@@ -90,7 +91,15 @@ def get_top_chunks(document_id: int, current_user: User = Depends(get_current_us
 @router.get("/{document_id}/metadata")
 def get_metadata(document_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     document = _get_owned_document(document_id, current_user.id, db)
-    return {"id": document.id, "title": document.title, "source": document.source, "created_at": document.created_at, "key_points": document.key_points or []}
+    return {
+        "id": document.id,
+        "title": document.title,
+        "source": document.source,
+        "source_path": document.source_path or document.source,
+        "created_at": document.created_at,
+        "key_points": document.key_points or [],
+        "index_markdown": document.index_markdown,
+    }
 
 
 @router.get("/{document_id}/embeddings")
