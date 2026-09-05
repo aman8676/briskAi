@@ -30,7 +30,7 @@ FROM python:3.12-slim
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     FRONTEND_DIST_DIR=/app/static \
-    OLLAMA_HOST=http://host.docker.internal:11434
+    OLLAMA_HOST=http://ollama:11434
 
 WORKDIR /app
 

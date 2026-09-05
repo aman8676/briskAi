@@ -1,0 +1,50 @@
+version: "3.9"
+
+services:
+
+  # ─────────────────────────────────────────────────────────────
+  # Ollama — runs the LLM + embedding engine inside Docker.
+  # The entrypoint script starts Ollama, pulls the two required
+  # models (nomic-embed-text + hermes3:3b), then keeps running.
+  # Models are stored in a named volume so they survive restarts.
+  # ─────────────────────────────────────────────────────────────
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    volumes:
+      - ollama_data:/root/.ollama          # persists downloaded models across restarts
+      - ./ollama/entrypoint.sh:/entrypoint.sh:ro
+    entrypoint: ["/bin/bash", "/entrypoint.sh"]
+    ports:
+      - "11434:11434"
+    restart: unless-stopped
+    healthcheck:
+      # Only becomes healthy AFTER models have been pulled
+      test: ["CMD-SHELL", "ollama list | grep -q 'nomic-embed-text'"]
+      interval: 15s
+      timeout: 10s
+      retries: 30          # allow up to 7.5 min for first-time model download
+      start_period: 30s
+
+  # ─────────────────────────────────────────────────────────────
+  # RAG App — FastAPI backend + React frontend in one container.
+  # Waits for Ollama to be HEALTHY (models ready) before starting.
+  # ─────────────────────────────────────────────────────────────
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: rag-app
+    ports:
+      - "80:8000"
+    environment:
+      - OLLAMA_HOST=http://ollama:11434    # internal Docker network — no host machine needed
+    env_file:
+      - backend/.env
+    depends_on:
+      ollama:
+        condition: service_healthy         # app only starts after models are pulled
+    restart: unless-stopped
+
+volumes:
+  ollama_data:
