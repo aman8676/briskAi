@@ -13,5 +13,16 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
-  server: { port: 5173 },
+  server: {
+    port: 5173,
+    proxy: {
+      '/auth': 'http://localhost:8000',
+      '/chat': 'http://localhost:8000',
+      '/chats': 'http://localhost:8000',
+      '/documents': 'http://localhost:8000',
+      '/retrieval': 'http://localhost:8000',
+      '/upload': 'http://localhost:8000',
+      '/dashboard': 'http://localhost:8000',
+    },
+  },
 })

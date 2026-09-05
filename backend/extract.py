@@ -42,6 +42,14 @@ def _find_tesseract_executable(explicit_paths=None):
     ]
     candidates.extend(common_windows_paths)
 
+    # Common Linux / Docker paths
+    common_linux_paths = [
+        "/usr/bin/tesseract",
+        "/usr/local/bin/tesseract",
+        "/usr/bin/tesseract-ocr",
+    ]
+    candidates.extend(common_linux_paths)
+
     for candidate in candidates:
         if not candidate:
             continue
@@ -92,40 +100,48 @@ def extract_text(file_path: str) -> str:
 
 def _extract_pdf(file_path: str) -> str:
     text_parts = []
+    tesseract_ok = _ensure_tesseract_available()
 
     with pdfplumber.open(file_path) as pdf:
-
         for i, page in enumerate(pdf.pages, start=1):
             text_parts.append(f"--- Page {i} ---")
+            page_text = ""
 
-            # NORMAL TEXT
+            # 1. Try native text extraction
             text = page.extract_text()
-
             if text and text.strip():
-                text_parts.append(text.strip())
+                page_text = text.strip()
 
-            # TABLES
+            # 2. Extract tables
             tables = page.extract_tables()
-
+            table_parts = []
             for table_index, table in enumerate(tables, start=1):
-
-                text_parts.append(
-                    f"--- Table {table_index} ---"
-                )
-
+                table_parts.append(f"--- Table {table_index} ---")
                 for row in table:
-
                     cells = [
-                        str(cell).strip()
-                        if cell is not None
-                        else ""
+                        str(cell).strip() if cell is not None else ""
                         for cell in row
                     ]
+                    table_parts.append(" | ".join(cells))
 
-                    text_parts.append(" | ".join(cells))
+            # 3. If native text is empty or very sparse (< 30 chars), try OCR on this page
+            if (not page_text or len(page_text) < 30) and tesseract_ok:
+                try:
+                    # Convert page to image using pdfplumber's pypdfium2 renderer
+                    page_img = page.to_image(resolution=200).original
+                    ocr_text = pytesseract.image_to_string(page_img)
+                    if ocr_text and ocr_text.strip():
+                        print(f"[OCR] PDF Page {i}: Extracted {len(ocr_text.strip())} chars via Tesseract OCR")
+                        page_text = (page_text + "\n" + ocr_text.strip()).strip()
+                except Exception as ocr_err:
+                    print(f"[OCR] PDF Page {i} OCR fallback failed: {ocr_err}")
+
+            if page_text:
+                text_parts.append(page_text)
+            if table_parts:
+                text_parts.extend(table_parts)
 
     return "\n".join(text_parts).strip()
-
 
 
 def _extract_docx(file_path: str) -> str:

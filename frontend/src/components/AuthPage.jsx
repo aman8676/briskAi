@@ -179,7 +179,7 @@ export default function AuthPage({ onDone, onBackToLanding, request, theme, togg
                 Verified Document Intelligence
               </h2>
               <p className={`mt-3 text-sm leading-relaxed ${isDark ? 'text-slate-300' : 'text-indigo-100'}`}>
-                Connect Ollama, PostgreSQL vectors, and CrossEncoders to audit chunk precision and eliminate LLM hallucinations.
+                Connect Google Gemini embeddings, PostgreSQL vectors, CrossEncoders, and Groq LLMs to audit chunk precision and eliminate hallucinations.
               </p>
             </div>
 

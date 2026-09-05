@@ -38,12 +38,12 @@ export default function LandingPage({ enterAuth, enterApp, isAuthenticated, onSi
       title: 'End-to-End Ingestion & Retrieval Pipeline',
       badge: 'Core Workflow',
       src: '/images/rag-pipeline.png',
-      desc: 'Seamlessly processes multi-format documents (PDF, DOCX, TXT, Excel, PPTX, Images) with recursive splitting, Ollama nomic-embed-text generation, and Cosine Distance indexing.',
+      desc: 'Seamlessly processes multi-format documents (PDF, DOCX, TXT, Excel, PPTX, Images) with recursive splitting, Google Gemini 768-D embedding generation, and Cosine Distance indexing.',
       highlights: [
         'Multi-format file & folder batch upload with client-side ZIP packaging',
-        '768-dimensional dense vector embeddings generated via local Ollama',
+        '768-dimensional dense vector embeddings generated via Google Gemini',
         'High-dimensional pgvector cosine distance nearest-neighbor queries',
-        'Dynamic context synthesis feeding local Llama 3.2 models',
+        'Dynamic context synthesis feeding high-speed Groq LLM inference',
       ],
     },
     {
@@ -55,7 +55,7 @@ export default function LandingPage({ enterAuth, enterApp, isAuthenticated, onSi
       highlights: [
         'Strict many-to-many user-document isolation tables',
         'Relevance scoring thresholding (rejects hallucinated or unrelated text)',
-        'Local Ollama inference ensures zero cloud data leakage or external telemetry',
+        'Enterprise-grade multi-tenant security ensuring complete user document isolation',
         'Bcrypt encrypted authentication with JWT bearer sessions',
       ],
     },
@@ -333,9 +333,9 @@ export default function LandingPage({ enterAuth, enterApp, isAuthenticated, onSi
               isDark ? "text-slate-300" : "text-slate-600"
             }`}
           >
-            A high-precision RAG Studio combining local Ollama neural
-            embeddings, PostgreSQL vector distance searching, and CrossEncoder
-            rerankers. Inspect every chunk trace before generating answers.
+            A high-precision RAG Studio combining Google Gemini neural
+            embeddings, PostgreSQL vector distance searching, CrossEncoder
+            rerankers, and ultra-fast Groq LLM generation. Inspect every chunk trace before answering.
           </p>
 
           {/* Proper Spaced CTA Buttons */}
@@ -375,7 +375,7 @@ export default function LandingPage({ enterAuth, enterApp, isAuthenticated, onSi
             >
               <div className="text-2xl sm:text-3xl ">768-D</div>
               <div className="text-xs text-slate-400 mt-1 font-medium">
-                Nomic Embeddings
+                Gemini Embeddings
               </div>
             </div>
             <div
@@ -666,10 +666,10 @@ export default function LandingPage({ enterAuth, enterApp, isAuthenticated, onSi
               },
               {
                 step: "2",
-                title: "Ollama Embedding",
+                title: "Gemini Embedding",
                 detail:
-                  "768-D dense float32 vector generated via nomic-embed-text.",
-                status: "Generated in 18ms",
+                  "768-D dense float32 vector generated via Google Gemini text-embedding-004.",
+                status: "Generated in 24ms",
               },
               {
                 step: "3",
@@ -689,7 +689,7 @@ export default function LandingPage({ enterAuth, enterApp, isAuthenticated, onSi
                 step: "5",
                 title: "Context Assembly",
                 detail:
-                  "Approved chunk tokens injected into Llama 3.2 system prompt.",
+                  "Approved chunk tokens injected into Groq LLM prompt.",
                 status: "Ready for LLM",
               },
             ].map((item, idx) => (
@@ -830,8 +830,8 @@ export default function LandingPage({ enterAuth, enterApp, isAuthenticated, onSi
               a: "A multi-stage Dockerfile compiles the React frontend with Vite in stage 1, then mounts the production build directly into FastAPI in stage 2. A single container port (8000) serves both the REST API, SPA routing, and static assets.",
             },
             {
-              q: "Can this run completely offline without an internet connection?",
-              a: "Yes! Ollama models (such as llama3.2:1b and nomic-embed-text) and PostgreSQL run completely locally. Once models are cached, all embeddings, chunking, and inference execute on your own machine with zero data leaving your network.",
+              q: "How does RAG Studio achieve high performance with low server memory?",
+              a: "By offloading dense neural vector embedding to Google Gemini and conversational reasoning to Groq, the backend runs ultra-lightweight (under 512MB RAM), eliminating the need for heavy local GPU/CPU model loading while keeping response latency in milliseconds.",
             },
             {
               q: "How does RAG Studio prevent document hallucination?",
@@ -922,7 +922,7 @@ export default function LandingPage({ enterAuth, enterApp, isAuthenticated, onSi
           </div>
 
           <p className="text-xs text-slate-500">
-            Self-Hosted Multi-Stage RAG Pipeline with pgvector & Ollama.
+            High-Precision Multi-Stage RAG Pipeline with pgvector, Gemini & Groq.
           </p>
 
           <div className="flex items-center gap-4 text-xs text-slate-400">

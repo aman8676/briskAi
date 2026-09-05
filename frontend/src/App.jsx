@@ -22,7 +22,7 @@ import AuthPage from "./components/AuthPage";
 import SignOutModal from "./components/SignOutModal";
 import ThemeToggle from "./components/ThemeToggle";
 
-const API = import.meta.env.VITE_API_URL ?? "https://rag-studio.amanjalan.tech";
+const API = import.meta.env.VITE_API_URL || "";
 
 const nav = [
   ["overview", "Overview", FileText],
@@ -205,7 +205,7 @@ function Dashboard({ onLogoutClick, onHomeClick, theme, toggleTheme }) {
 
         const data = new FormData();
         data.append("file", zipFile);
-        setNotice("Uploading and generating 768-D dense embeddings...");
+        setNotice("Uploading and generating 768-D dense embeddings via Google Gemini...");
         const response = await request("/upload", {
           method: "POST",
           body: data,
@@ -227,7 +227,7 @@ function Dashboard({ onLogoutClick, onHomeClick, theme, toggleTheme }) {
         setNotice(
           isZip
             ? "Processing ZIP archives..."
-            : "Creating embeddings via Ollama nomic-embed-text...",
+            : "Generating 768-D dense embeddings via Google Gemini...",
         );
         const response = await request("/upload", {
           method: "POST",
@@ -237,7 +237,7 @@ function Dashboard({ onLogoutClick, onHomeClick, theme, toggleTheme }) {
         setNotice(
           isZip
             ? `Bulk upload completed! Processed: ${response.total_processed} document(s)`
-            : "Document successfully parsed, chunked, and vectorized!",
+            : "Document successfully parsed, chunked, and embedded via Google Gemini!",
         );
       }
     } catch (err) {
@@ -966,7 +966,12 @@ function ChatPanel({
         className={`flex items-center justify-between border-b p-5 ${isDark ? "border-slate-800" : "border-slate-200"}`}
       >
         <div>
-          <b className="text-sm sm:text-base font-bold">RAG Document Agent</b>
+          <div className="flex items-center gap-2">
+            <b className="text-sm sm:text-base font-bold">RAG Document Agent</b>
+            <span className="text-[10px] font-mono font-medium px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+              Groq LLM
+            </span>
+          </div>
           <div className="mt-1 inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-400">
             <span className="inline-block h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
             Active Retrieval Scope:{" "}
@@ -997,7 +1002,7 @@ function ChatPanel({
                     : "bg-slate-100 text-slate-800"
               }`}
             >
-              {m.content || "Generating fact-checked response from Ollama..."}
+              {m.content || "Retrieving context & generating fact-checked response from Groq..."}
             </div>
           ))
         ) : (
@@ -1044,7 +1049,7 @@ function Pipeline({ docs, selectedDoc, theme }) {
     ],
     [
       "Vector search",
-      "Embeds the question with nomic-embed-text and queries the ten closest chunks via pgvector cosine distance.",
+      "Embeds the question with Google Gemini and queries the ten closest chunks via pgvector cosine distance.",
     ],
     [
       "Reranker",
@@ -1056,11 +1061,11 @@ function Pipeline({ docs, selectedDoc, theme }) {
     ],
     [
       "Context writing",
-      "Joins the approved chunk text with separators as the exact factual evidence for Llama 3.2.",
+      "Joins the approved chunk text with separators as the exact factual evidence for Groq.",
     ],
     [
       "Answer + memory",
-      "Streams the answer to chat and saves both messages for conversational memory.",
+      "Streams the answer from Groq to chat and saves both messages for conversational memory.",
     ],
   ];
 

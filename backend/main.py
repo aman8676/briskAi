@@ -48,17 +48,24 @@ app.include_router(upload_router)
 
 @app.on_event("startup")
 def warmup_models():
-    """Warm up the embedding model on server startup so users do not hit a 502 timeout on first upload."""
+    """Verify Gemini, Groq, and Tesseract OCR readiness on startup."""
     try:
-        from embeddings import _get_gemini_api_key, _get_local_model
+        from embeddings import _get_gemini_api_key
         if _get_gemini_api_key():
-            print("[startup] Gemini Cloud Embedding API is active. Fast remote embeddings ready.")
+            print("[startup] [OK] Google Gemini Cloud Embedding API is active.")
         else:
-            print("[startup] Warming up local embedding model fallback...")
-            _get_local_model()
-            print("[startup] Local embedding model is warm and ready.")
+            print("[startup] [WARN] GEMINI_API_KEY not configured.")
     except Exception as e:
-        print(f"[startup] Warning: model warmup failed: {e}")
+        print(f"[startup] Embedding check warning: {e}")
+
+    try:
+        from extract import _ensure_tesseract_available
+        if _ensure_tesseract_available():
+            print("[startup] [OK] Tesseract OCR engine is active and ready.")
+        else:
+            print("[startup] [WARN] Tesseract OCR executable not detected.")
+    except Exception as e:
+        print(f"[startup] OCR check warning: {e}")
 
 
 
