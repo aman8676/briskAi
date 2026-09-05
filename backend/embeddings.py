@@ -1,14 +1,23 @@
 import os
+import warnings
 from sentence_transformers import SentenceTransformer
 
-# Load model locally via sentence-transformers (exact same 768-D vectors as nomic-embed-text)
-# Initialized lazily to avoid startup delays
+# Suppress harmless HuggingFace hub warnings
+warnings.filterwarnings("ignore", message=".*unauthenticated requests to the HF Hub.*")
+
 _model = None
 
 def get_model() -> SentenceTransformer:
     global _model
     if _model is None:
-        _model = SentenceTransformer("nomic-ai/nomic-embed-text-v1", trust_remote_code=True)
+        token = os.getenv("HF_TOKEN") or os.getenv("HUGGINGFACE_TOKEN") or os.getenv("HUGGING_FACE_HUB_TOKEN")
+        kwargs = {"trust_remote_code": True}
+        if token:
+            kwargs["token"] = token
+            
+        print("[embeddings] Loading SentenceTransformer nomic-ai/nomic-embed-text-v1...")
+        _model = SentenceTransformer("nomic-ai/nomic-embed-text-v1", **kwargs)
+        print("[embeddings] SentenceTransformer model loaded successfully.")
     return _model
 
 
@@ -16,8 +25,6 @@ def embed_text(text: str, is_query: bool = False) -> list[float]:
     if not text or not text.strip():
         raise ValueError("Cannot embed empty text")
 
-    # Nomic embed text uses prefixes for optimal performance:
-    # "search_query: " for queries, "search_document: " for documents
     prefix = "search_query: " if is_query else "search_document: "
     prefixed_text = f"{prefix}{text.strip()}"
 

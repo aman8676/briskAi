@@ -46,6 +46,18 @@ app.include_router(retrieval_router)
 app.include_router(upload_router)
 
 
+@app.on_event("startup")
+def warmup_models():
+    """Warm up the embedding model on server startup so users do not hit a 502 timeout on first upload."""
+    try:
+        from embeddings import get_model
+        print("[startup] Warming up embedding model...")
+        get_model()
+        print("[startup] Embedding model is warm and ready.")
+    except Exception as e:
+        print(f"[startup] Warning: model warmup failed: {e}")
+
+
 
 @app.get("/dashboard")
 def dashboard(current_user: User = Depends(get_current_user)):
