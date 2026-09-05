@@ -1,6 +1,7 @@
-import ollama
+import os
+from groq import Groq
 
-SUMMARY_MODEL = "llama3.2:1b"  # replace with your exact tag from `ollama list`
+SUMMARY_MODEL = os.getenv("GROQ_SUMMARY_MODEL", "llama-3.1-8b-instant")
 
 
 def generate_key_points(text: str, max_points: int = 5) -> list[str]:
@@ -16,17 +17,32 @@ def generate_key_points(text: str, max_points: int = 5) -> list[str]:
         f"Document:\n{excerpt}"
     )
 
-    response = ollama.chat(
-        model=SUMMARY_MODEL,
-        messages=[{"role": "user", "content": prompt}],
-    )
+    try:
+        api_key = os.getenv("GROQ_API_KEY")
+        if not api_key:
+            # Fallback if no key is configured: generate quick heuristic bullets
+            lines = [line.strip() for line in excerpt.split("\n") if len(line.strip()) > 30]
+            return lines[:max_points]
 
-    raw_output = response["message"]["content"].strip()
+        client = Groq(api_key=api_key)
+        response = client.chat.completions.create(
+            model=SUMMARY_MODEL,
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.2,
+            max_tokens=512,
+        )
 
-    points = [
-        line.lstrip("-•* ").strip()
-        for line in raw_output.split("\n")
-        if line.strip()
-    ]
+        raw_output = response.choices[0].message.content.strip()
 
-    return points[:max_points]
+        points = [
+            line.lstrip("-•* ").strip()
+            for line in raw_output.split("\n")
+            if line.strip()
+        ]
+
+        return points[:max_points]
+
+    except Exception as e:
+        print(f"[generate_key_points] Error: {e}")
+        lines = [line.strip() for line in excerpt.split("\n") if len(line.strip()) > 30]
+        return lines[:max_points]
