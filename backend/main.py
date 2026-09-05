@@ -50,10 +50,13 @@ app.include_router(upload_router)
 def warmup_models():
     """Warm up the embedding model on server startup so users do not hit a 502 timeout on first upload."""
     try:
-        from embeddings import get_model
-        print("[startup] Warming up embedding model...")
-        get_model()
-        print("[startup] Embedding model is warm and ready.")
+        from embeddings import _get_gemini_api_key, _get_local_model
+        if _get_gemini_api_key():
+            print("[startup] Gemini Cloud Embedding API is active. Fast remote embeddings ready.")
+        else:
+            print("[startup] Warming up local embedding model fallback...")
+            _get_local_model()
+            print("[startup] Local embedding model is warm and ready.")
     except Exception as e:
         print(f"[startup] Warning: model warmup failed: {e}")
 
