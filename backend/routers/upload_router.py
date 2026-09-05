@@ -58,8 +58,11 @@ def _handle_single_upload(file_path: str, current_user: User, db: Session):
     try:
         document = ingest_file(file_path, current_user, db, source_label=os.path.basename(file_path))
     except UnsupportedFileTypeError as e:
+        print(f"Unsupported file type error: {e}")
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Ingestion failed: {e}")
     finally:
         # Clean up the uploaded file

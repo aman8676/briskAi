@@ -92,7 +92,7 @@ if STATIC_DIR and os.path.exists(os.path.join(STATIC_DIR, "index.html")):
         "/openapi.json",
     )
 
-    @app.get("/{full_path:path}")
+    @app.api_route("/{full_path:path}", methods=["GET", "HEAD"])
     def serve_frontend(full_path: str):
         normalized = "/" + full_path.lstrip("/")
         if any(normalized == prefix or normalized.startswith(prefix + "/") for prefix in API_PREFIXES):
@@ -104,7 +104,7 @@ if STATIC_DIR and os.path.exists(os.path.join(STATIC_DIR, "index.html")):
 
         return FileResponse(os.path.join(STATIC_DIR, "index.html"))
 else:
-    @app.get("/")
+    @app.api_route("/", methods=["GET", "HEAD"])
     def root():
         return {"status": "ok", "message": "API is running"}
 
