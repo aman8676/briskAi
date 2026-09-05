@@ -49,8 +49,7 @@ COPY requirements.txt .
 # then install remaining backend dependencies
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu && \
-    pip install --no-cache-dir -r requirements.txt && \
-    python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('nomic-ai/nomic-embed-text-v1', trust_remote_code=True)"
+    pip install --no-cache-dir -r requirements.txt
 
 # Copy backend application files
 COPY backend/ /app/

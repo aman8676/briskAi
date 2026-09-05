@@ -2,7 +2,6 @@ import os
 import math
 
 from sqlalchemy.orm import Session
-from sentence_transformers import CrossEncoder
 
 from embeddings import embed_text
 from models.document import Document
@@ -76,10 +75,11 @@ RELEVANCE_THRESHOLD = 0.5  # probability (0-1) after sigmoid, tune from real log
 VECTOR_SIMILARITY_THRESHOLD = 0.15
 
 
-def get_reranker() -> CrossEncoder:
+def get_reranker():
     """Avoid downloading/loading the reranker while FastAPI is starting."""
     global reranker
     if reranker is None:
+        from sentence_transformers import CrossEncoder
         # Do not make a chat request wait for a Hugging Face download. The
         # caller catches a missing local model and uses vector ranking instead.
         reranker = CrossEncoder(
