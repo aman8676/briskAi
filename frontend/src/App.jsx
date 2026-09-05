@@ -386,33 +386,66 @@ function Dashboard({ onLogoutClick, onHomeClick, theme, toggleTheme }) {
           </div>
 
           {/* Upload Dropzone */}
-          <label
-            className={`mt-6 block cursor-pointer rounded-2xl border-2 border-dashed p-4 text-center transition-all ${
+          <div
+            className={`mt-6 rounded-2xl border-2 border-dashed p-4 text-center transition-all ${
               isDark
-                ? "border-slate-700 bg-slate-900/50 hover:border-indigo-500 hover:bg-indigo-500/5"
-                : "border-slate-300 bg-slate-50 hover:border-indigo-600 hover:bg-indigo-50/50"
+                ? "border-slate-700 bg-slate-900/50"
+                : "border-slate-300 bg-slate-50"
             }`}
           >
+            {/* Hidden inputs — one for files, one for folders */}
             <input
+              id="upload-files-input"
+              className="hidden"
+              type="file"
+              onChange={upload}
+              multiple
+              accept=".pdf,.docx,.txt,.md,.json,.csv,.xlsx,.pptx,.html,.htm,.jpg,.jpeg,.png,.gif,.bmp,.tiff,.webp,.zip"
+            />
+            <input
+              id="upload-folder-input"
               className="hidden"
               type="file"
               onChange={upload}
               multiple
               webkitdirectory=""
-              accept=".pdf,.docx,.txt,.md,.json,.csv,.xlsx,.pptx,.html,.htm,.jpg,.jpeg,.png,.gif,.bmp,.tiff,.webp,.zip"
             />
+
             <div className="w-8 h-8 mx-auto rounded-lg bg-indigo-500/10 text-indigo-500 flex items-center justify-center mb-2">
               <Upload className="w-4 h-4" />
             </div>
             <span
-              className={`block font-semibold text-xs ${isDark ? "text-white" : "text-slate-900"}`}
+              className={`block font-semibold text-xs mb-3 ${isDark ? "text-white" : "text-slate-900"}`}
             >
               Upload Files or Folder
             </span>
-            <span className="mt-1 block text-[10px] text-slate-400">
-              Auto-zips directories
+
+            <div className="flex gap-2 justify-center">
+              <label
+                htmlFor="upload-files-input"
+                className={`cursor-pointer flex-1 py-1.5 rounded-lg border text-[11px] font-medium transition-colors ${
+                  isDark
+                    ? "border-slate-700 text-slate-300 hover:border-indigo-500 hover:text-indigo-400 hover:bg-indigo-500/10"
+                    : "border-slate-300 text-slate-600 hover:border-indigo-500 hover:text-indigo-600 hover:bg-indigo-50"
+                }`}
+              >
+                📄 Files
+              </label>
+              <label
+                htmlFor="upload-folder-input"
+                className={`cursor-pointer flex-1 py-1.5 rounded-lg border text-[11px] font-medium transition-colors ${
+                  isDark
+                    ? "border-slate-700 text-slate-300 hover:border-indigo-500 hover:text-indigo-400 hover:bg-indigo-500/10"
+                    : "border-slate-300 text-slate-600 hover:border-indigo-500 hover:text-indigo-600 hover:bg-indigo-50"
+                }`}
+              >
+                📁 Folder
+              </label>
+            </div>
+            <span className="mt-2 block text-[10px] text-slate-400">
+              Folders are auto-zipped
             </span>
-          </label>
+          </div>
 
           {/* Nav Items */}
           <div className="mt-6 space-y-1">
