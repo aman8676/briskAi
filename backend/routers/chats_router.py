@@ -21,6 +21,7 @@ from retrieval import (
     retrieve_document_overview_context,
 )
 from history import load_recent_history
+from summarize import get_available_model
 
 
 router = APIRouter(prefix="/chat", tags=["chat"])
@@ -310,8 +311,9 @@ DOCUMENT CONTEXT:
                 return
 
             client = Groq(api_key=api_key)
+            model_name = os.getenv("GROQ_CHAT_MODEL") or get_available_model(client)
             completion = client.chat.completions.create(
-                model=CHAT_MODEL,
+                model=model_name,
                 messages=messages,
                 temperature=0.3,
                 max_tokens=2048,

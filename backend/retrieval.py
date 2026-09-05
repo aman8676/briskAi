@@ -126,9 +126,11 @@ Return ONLY the rewritten standalone question.
             return query
 
         from groq import Groq
+        from summarize import get_available_model
         client = Groq(api_key=groq_api_key)
+        model_name = os.getenv("GROQ_REWRITE_MODEL") or get_available_model(client)
         response = client.chat.completions.create(
-            model="llama-3.1-8b-instant",
+            model=model_name,
             messages=messages,
             temperature=0,
             max_tokens=256,
