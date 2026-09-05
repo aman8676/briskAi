@@ -13,21 +13,17 @@ def _get_gemini_api_key() -> str | None:
 
 
 def _embed_gemini_single(text: str, is_query: bool = False, api_key: str = "") -> list[float]:
-    """
-    Generate 768-D embeddings using Google Gemini's free text-embedding-004 model via REST API.
-    Fast (takes ~100ms) and uses 0 MB of local CPU/RAM on Render.
-    """
-    url = "https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent"
+    url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:embedContent"
     headers = {
         "x-goog-api-key": api_key,
         "Content-Type": "application/json",
     }
     task_type = "RETRIEVAL_QUERY" if is_query else "RETRIEVAL_DOCUMENT"
     payload = {
-        "model": "models/text-embedding-004",
+        "model": "models/gemini-embedding-001",
         "content": {"parts": [{"text": text.strip()}]},
         "taskType": task_type,
-        "outputDimensionality": 768,
+        "outputDimensionality": 768,   # keep 768 to match your current vector column size
     }
     response = requests.post(url, headers=headers, json=payload, timeout=30)
     if not response.ok:
@@ -37,22 +33,19 @@ def _embed_gemini_single(text: str, is_query: bool = False, api_key: str = "") -
 
 
 def _embed_gemini_batch(chunks: list[str], api_key: str = "") -> list[list[float]]:
-    """
-    Generate batch embeddings with Gemini text-embedding-004 in chunks of up to 50 items.
-    """
-    url = "https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:batchEmbedContents"
+    url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:batchEmbedContents"
     headers = {
         "x-goog-api-key": api_key,
         "Content-Type": "application/json",
     }
     results = []
-    
+
     batch_size = 50
     for i in range(0, len(chunks), batch_size):
         batch = chunks[i : i + batch_size]
         requests_list = [
             {
-                "model": "models/text-embedding-004",
+                "model": "models/gemini-embedding-001",
                 "content": {"parts": [{"text": c.strip()}]},
                 "taskType": "RETRIEVAL_DOCUMENT",
                 "outputDimensionality": 768,
@@ -65,9 +58,8 @@ def _embed_gemini_batch(chunks: list[str], api_key: str = "") -> list[list[float
         data = resp.json()
         for emb in data.get("embeddings", []):
             results.append(emb["values"])
-            
-    return results
 
+    return results
 
 def embed_text(text: str, is_query: bool = False) -> list[float]:
     if not text or not text.strip():
