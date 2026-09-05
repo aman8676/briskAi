@@ -29,8 +29,7 @@ FROM python:3.12-slim
 # Prevent Python from writing .pyc files and enable unbuffered logging
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    FRONTEND_DIST_DIR=/app/static \
-    OLLAMA_HOST=http://ollama:11434
+    FRONTEND_DIST_DIR=/app/static
 
 WORKDIR /app
 

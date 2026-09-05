@@ -1,4 +1,4 @@
-import ollama
+import os
 import math
 
 from sqlalchemy.orm import Session
@@ -121,13 +121,20 @@ Return ONLY the rewritten standalone question.
         messages.extend(history)
         messages.append({"role": "user", "content": query})
 
-        response = ollama.chat(
-            model="llama3.2:1b",
+        groq_api_key = os.getenv("GROQ_API_KEY")
+        if not groq_api_key:
+            return query
+
+        from groq import Groq
+        client = Groq(api_key=groq_api_key)
+        response = client.chat.completions.create(
+            model="llama-3.1-8b-instant",
             messages=messages,
-            options={"temperature": 0},
+            temperature=0,
+            max_tokens=256,
         )
 
-        rewritten_query = response["message"]["content"].strip()
+        rewritten_query = response.choices[0].message.content.strip()
         return rewritten_query if rewritten_query else query
 
     except Exception as e:

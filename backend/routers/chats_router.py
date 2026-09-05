@@ -1,4 +1,5 @@
-import ollama
+import os
+from groq import Groq
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
@@ -24,7 +25,7 @@ from history import load_recent_history
 
 router = APIRouter(prefix="/chat", tags=["chat"])
 
-CHAT_MODEL = "hermes3:3b"
+CHAT_MODEL = os.getenv("GROQ_CHAT_MODEL", "llama-3.3-70b-versatile")
 MAX_MESSAGE_LENGTH = 4000  # prevent abuse / runaway prompts
 
 
@@ -301,21 +302,35 @@ DOCUMENT CONTEXT:
     def generate():
         full_response = ""
         try:
-            stream = ollama.chat(model=CHAT_MODEL, messages=messages, stream=True)
-            for chunk in stream:
-                token = chunk["message"]["content"]
-                full_response += token
-                yield token
+            api_key = os.getenv("GROQ_API_KEY")
+            if not api_key:
+                err = "GROQ_API_KEY is not configured on the server. Please set it in your environment variables."
+                yield err
+                full_response += err
+                return
+
+            client = Groq(api_key=api_key)
+            completion = client.chat.completions.create(
+                model=CHAT_MODEL,
+                messages=messages,
+                temperature=0.3,
+                max_tokens=2048,
+                stream=True,
+            )
+            for chunk in completion:
+                delta = chunk.choices[0].delta.content or ""
+                if delta:
+                    full_response += delta
+                    yield delta
 
         except Exception as e:
-            error_message = "\n\n[An error occurred while generating the response. Please try again.]"
-            print(f"[chat generate] LLM error: {e}")
+            error_message = f"\n\n[An error occurred while generating the response: {e}]"
+            print(f"[chat generate] Groq error: {e}")
             full_response += error_message
             yield error_message
 
         finally:
-            # Always save whatever was generated, even a partial response on error —
-            # avoids losing the user's message with no assistant reply saved at all.
+            # Always save whatever was generated, even a partial response on error
             if full_response.strip():
                 assistant_msg = Message(
                     chat_id=payload.chat_id,
