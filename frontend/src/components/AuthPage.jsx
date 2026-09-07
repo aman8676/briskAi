@@ -125,15 +125,15 @@ export default function AuthPage({ onDone, onBackToLanding, request, theme, togg
 
   return (
     <main
-      className={`min-h-screen flex flex-col justify-between p-4 sm:p-8 transition-colors duration-300 ${
+      className={`min-h-[100dvh] flex flex-col justify-between p-5 sm:p-8 transition-colors duration-300 ${
         isDark ? 'bg-[#030509] text-white' : 'bg-slate-100 text-slate-900'
       }`}
     >
       {/* Top Header */}
-      <header className="w-full max-w-6xl mx-auto flex items-center justify-between py-2">
+      <header className="w-full max-w-6xl mx-auto flex items-center justify-between py-1 sm:py-2">
         <button
           onClick={onBackToLanding}
-          className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-sm font-medium border transition-all ${
+          className={`inline-flex items-center gap-2 min-h-11 px-3 rounded-xl text-sm font-medium border transition-all ${
             isDark
               ? 'border-slate-800 bg-slate-900/60 text-slate-300 hover:text-white hover:border-slate-700'
               : 'border-slate-200 bg-white text-slate-600 hover:text-indigo-600 hover:border-indigo-200'
@@ -149,9 +149,9 @@ export default function AuthPage({ onDone, onBackToLanding, request, theme, togg
       </header>
 
       {/* Center Auth Card */}
-      <div className="flex-1 flex items-center justify-center py-6">
+      <div className="flex-1 flex items-center justify-center py-5 sm:py-6 -translate-y-3 sm:translate-y-0">
         <div
-          className={`w-full max-w-4xl overflow-hidden rounded-3xl border shadow-2xl transition-all duration-300 grid md:grid-cols-12 ${
+          className={`w-full max-w-4xl overflow-hidden rounded-none border-0 shadow-none transition-all duration-300 grid md:grid-cols-12 md:rounded-3xl md:border md:shadow-2xl ${
             isDark
               ? 'bg-slate-900/90 border-slate-800 shadow-indigo-950/20'
               : 'bg-white border-slate-200 shadow-slate-200'
@@ -159,7 +159,7 @@ export default function AuthPage({ onDone, onBackToLanding, request, theme, togg
         >
           {/* Left Hero Side */}
           <div
-            className={`md:col-span-5 p-8 sm:p-10 flex flex-col justify-between relative overflow-hidden ${
+            className={`hidden md:flex md:col-span-5 p-8 sm:p-10 flex-col justify-between relative overflow-hidden ${
               isDark
                 ? 'bg-gradient-to-br from-indigo-950 via-slate-900 to-slate-950 border-r border-slate-800'
                 : 'bg-gradient-to-br from-indigo-600 via-indigo-700 to-violet-800 text-white'
@@ -200,7 +200,7 @@ export default function AuthPage({ onDone, onBackToLanding, request, theme, togg
           </div>
 
           {/* Right Form Side */}
-          <div className="md:col-span-7 p-8 sm:p-12 flex flex-col justify-center">
+          <div className="md:col-span-7 p-0 md:p-8 lg:p-12 flex flex-col justify-center">
             {/* Mode Switch Tabs */}
             {(mode === 'login' || mode === 'signup') && (
               <div
@@ -211,7 +211,7 @@ export default function AuthPage({ onDone, onBackToLanding, request, theme, togg
                 <button
                   type="button"
                   onClick={() => setModeAndClear('login')}
-                  className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-all ${
+                  className={`flex-1 min-h-11 py-2 text-sm font-semibold rounded-lg transition-all ${
                     mode === 'login'
                       ? isDark
                         ? 'bg-indigo-600 text-white shadow-md'
@@ -226,7 +226,7 @@ export default function AuthPage({ onDone, onBackToLanding, request, theme, togg
                 <button
                   type="button"
                   onClick={() => setModeAndClear('signup')}
-                  className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-all ${
+                  className={`flex-1 min-h-11 py-2 text-sm font-semibold rounded-lg transition-all ${
                     mode === 'signup'
                       ? isDark
                         ? 'bg-indigo-600 text-white shadow-md'
@@ -265,7 +265,7 @@ export default function AuthPage({ onDone, onBackToLanding, request, theme, togg
                       placeholder="e.g. aman_dev"
                       value={form.username}
                       onChange={(e) => setForm({ ...form, username: e.target.value })}
-                      className={`w-full pl-10 pr-4 py-3 rounded-xl text-sm border outline-none transition-all ${
+                      className={`w-full min-h-[50px] pl-10 pr-4 py-3 rounded-xl text-base sm:text-sm border outline-none transition-all ${
                         isDark
                           ? 'bg-slate-950 border-slate-700 text-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500'
                           : 'bg-slate-50 border-slate-200 text-slate-900 focus:border-indigo-600 focus:bg-white'
@@ -288,7 +288,7 @@ export default function AuthPage({ onDone, onBackToLanding, request, theme, togg
                       placeholder="name@company.com"
                       value={form.email}
                       onChange={(e) => setForm({ ...form, email: e.target.value })}
-                      className={`w-full pl-10 pr-4 py-3 rounded-xl text-sm border outline-none transition-all ${
+                      className={`w-full min-h-[50px] pl-10 pr-4 py-3 rounded-xl text-base sm:text-sm border outline-none transition-all ${
                         isDark
                           ? 'bg-slate-950 border-slate-700 text-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500'
                           : 'bg-slate-50 border-slate-200 text-slate-900 focus:border-indigo-600 focus:bg-white'
@@ -322,7 +322,7 @@ export default function AuthPage({ onDone, onBackToLanding, request, theme, togg
                       placeholder="••••••••••••"
                       value={form.password}
                       onChange={(e) => setForm({ ...form, password: e.target.value })}
-                      className={`w-full pl-10 pr-11 py-3 rounded-xl text-sm border outline-none transition-all ${
+                      className={`w-full min-h-[50px] pl-10 pr-11 py-3 rounded-xl text-base sm:text-sm border outline-none transition-all ${
                         isDark
                           ? 'bg-slate-950 border-slate-700 text-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500'
                           : 'bg-slate-50 border-slate-200 text-slate-900 focus:border-indigo-600 focus:bg-white'
@@ -331,7 +331,7 @@ export default function AuthPage({ onDone, onBackToLanding, request, theme, togg
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 min-h-11 min-w-11 flex items-center justify-center text-slate-400 hover:text-slate-200"
                     >
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
@@ -352,7 +352,7 @@ export default function AuthPage({ onDone, onBackToLanding, request, theme, togg
                       placeholder="••••••••••••"
                       value={form.confirmPassword}
                       onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })}
-                      className={`w-full pl-10 pr-4 py-3 rounded-xl text-sm border outline-none transition-all ${
+                      className={`w-full min-h-[50px] pl-10 pr-4 py-3 rounded-xl text-base sm:text-sm border outline-none transition-all ${
                         isDark
                           ? 'bg-slate-950 border-slate-700 text-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500'
                           : 'bg-slate-50 border-slate-200 text-slate-900 focus:border-indigo-600 focus:bg-white'
@@ -380,7 +380,7 @@ export default function AuthPage({ onDone, onBackToLanding, request, theme, togg
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3.5 rounded-xl font-semibold text-sm bg-indigo-600 text-white hover:bg-indigo-500 shadow-lg shadow-indigo-600/30 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
+                className="w-full min-h-[50px] rounded-xl font-semibold text-base sm:text-sm bg-indigo-600 text-white hover:bg-indigo-500 shadow-lg shadow-indigo-600/30 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
               >
                 {loading ? (
                   <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -407,7 +407,7 @@ export default function AuthPage({ onDone, onBackToLanding, request, theme, togg
       </div>
 
       {/* Footer */}
-      <footer className="w-full max-w-6xl mx-auto text-center py-4 text-xs text-slate-500">
+      <footer className="hidden sm:block w-full max-w-6xl mx-auto text-center py-4 text-xs text-slate-500">
         ◈ RAG Studio • Fully localized, zero cloud telemetry data pipeline.
       </footer>
     </main>
