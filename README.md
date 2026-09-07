@@ -4,20 +4,20 @@ RAG Studio is a document intelligence workspace for uploading business documents
 
 ## Technology Stack
 
-| Layer | Technology | Purpose |
-| --- | --- | --- |
-| Frontend | React, Vite, Tailwind CSS, Lucide React | Landing page, authentication, dashboard, uploads, retrieval diagnostics, and streaming chat UI |
-| API | FastAPI, Uvicorn, Pydantic | HTTP API, authentication dependencies, upload handling, chat streaming, and static frontend hosting |
-| Database | PostgreSQL, SQLAlchemy, pgvector | Users, documents, chunks, embeddings, chat sessions, messages, and ownership relationships |
-| Document processing | pdfplumber, pypdf, python-docx, openpyxl, python-pptx, BeautifulSoup, lxml | Text, table, spreadsheet, presentation, HTML, and structured-data extraction |
-| OCR | Tesseract, pytesseract, Pillow, pdf2image | OCR fallback for scanned PDFs and images |
-| Chunking | LangChain RecursiveCharacterTextSplitter | Recursive paragraph-aware chunking with overlap |
-| Embeddings | Google Gemini `gemini-embedding-001` | 768-dimensional document and query vectors |
-| Reranking | Sentence Transformers CrossEncoder | Reorders vector candidates by query relevance |
-| Generation | Groq `llama-3.3-70b-versatile` | Streams grounded answers from retrieved context |
-| Authentication | bcrypt, Passlib, JWT via python-jose | Password hashing, bearer tokens, email verification, and password reset |
-| Email | Resend | Verification and password-reset email delivery |
-| Deployment | Docker, Docker Compose | Multi-stage frontend build and unified FastAPI runtime |
+| Layer               | Technology                                                                 | Purpose                                                                                             |
+| ------------------- | -------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Frontend            | React, Vite, Tailwind CSS, Lucide React                                    | Landing page, authentication, dashboard, uploads, retrieval diagnostics, and streaming chat UI      |
+| API                 | FastAPI, Uvicorn, Pydantic                                                 | HTTP API, authentication dependencies, upload handling, chat streaming, and static frontend hosting |
+| Database            | PostgreSQL, SQLAlchemy, pgvector                                           | Users, documents, chunks, embeddings, chat sessions, messages, and ownership relationships          |
+| Document processing | pdfplumber, pypdf, python-docx, openpyxl, python-pptx, BeautifulSoup, lxml | Text, table, spreadsheet, presentation, HTML, and structured-data extraction                        |
+| OCR                 | Tesseract, pytesseract, Pillow, pdf2image                                  | OCR fallback for scanned PDFs and images                                                            |
+| Chunking            | LangChain RecursiveCharacterTextSplitter                                   | Recursive paragraph-aware chunking with overlap                                                     |
+| Embeddings          | Google Gemini `gemini-embedding-001`                                       | 768-dimensional document and query vectors                                                          |
+| Reranking           | Sentence Transformers CrossEncoder                                         | Reorders vector candidates by query relevance                                                       |
+| Generation          | Groq `llama-3.3-70b-versatile`                                             | Streams grounded answers from retrieved context                                                     |
+| Authentication      | bcrypt, Passlib, JWT via python-jose                                       | Password hashing, bearer tokens, email verification, and password reset                             |
+| Email               | Resend                                                                     | Verification and password-reset email delivery                                                      |
+| Deployment          | Docker, Docker Compose                                                     | Multi-stage frontend build and unified FastAPI runtime                                              |
 
 ## System Pipeline
 
@@ -161,13 +161,13 @@ Relevant code: `backend/retrieval.py`, `backend/history.py`, `backend/routers/re
 
 ## API Surface
 
-| Area | Endpoints |
-| --- | --- |
+| Area           | Endpoints                                                                                                                                         |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Authentication | `POST /auth/signup`, `GET /auth/verify-email`, `POST /auth/login`, `POST /auth/forgot-password`, `POST /auth/reset-password`, `POST /auth/logout` |
-| Uploads | `POST /upload` |
-| Documents | `GET /documents`, `DELETE /documents/{id}`, `GET /documents/{id}/chunks`, `GET /documents/{id}/metadata`, `GET /documents/{id}/embeddings` |
-| Chats | `GET /chats`, `POST /chat/new`, `GET /chat/{id}/history`, `DELETE /chat/{id}`, `DELETE /chats`, `POST /chat` |
-| Retrieval | `POST /retrieval/inspect` |
+| Uploads        | `POST /upload`                                                                                                                                    |
+| Documents      | `GET /documents`, `DELETE /documents/{id}`, `GET /documents/{id}/chunks`, `GET /documents/{id}/metadata`, `GET /documents/{id}/embeddings`        |
+| Chats          | `GET /chats`, `POST /chat/new`, `GET /chat/{id}/history`, `DELETE /chat/{id}`, `DELETE /chats`, `POST /chat`                                      |
+| Retrieval      | `POST /retrieval/inspect`                                                                                                                         |
 
 ## Database Model
 
